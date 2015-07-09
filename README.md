@@ -1,20 +1,20 @@
-[![GitHub tag](https://img.shields.io/github/tag/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/tags)
-[![GitHub issues](https://img.shields.io/github/issues/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/issues)
-[![GoDoc](https://godoc.org/github.com/obihann/tremble-js?status.svg)](https://godoc.org/github.com/obihann/tremble-js)
-[![Dependency Status](https://david-dm.org/obihann/tremble-js.svg)](https://david-dm.org/obihann/tremble-js)
-[![GitHub license](https://img.shields.io/github/license/obihann/tremble-js.svg)]()
+[![GitHub issues](https://img.shields.io/github/issues-raw/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/issues)
+[![GitHub license](https://img.shields.io/github/license/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/blob/master/LICENSE)
 
 # TrembleJS
-Automatically build your website and screenshot every route then store each image in the cloud tagged with the commit id. When you find a visual bug and don't know what commit is responsible, check your screenshots and find out easily.
+[![Logo](https://raw.githubusercontent.com/obihann/tremble-js/master/logo.png)]()
+
+Automatically builds your website,  screenshots every page, and stores them in the cloud grouped by the commit. 
+
+When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.
 
 ##Table of Contents
-* [Getting Started](#getting-stated)
 * [Issues](https://github.com/obihann/tremble-js/issues)
-* [Wiki](https://github.com/obihann/tremble-js/wiki)
+* [Attributes](#attributes)
 * [License](#license)
 
-##Getting Started
-The user has to run this, so show them now.
+## Attributes
+Icon made by [Freepik](http://www.freepik.com "Freepik") from [www.flaticon.com](http://www.flaticon.com "Flaticon") is licensed under [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/ "Creative Commons BY 3.0")
 
 ##License
 This tool is protected by the [GNU General Public License v2](http://www.gnu.org/licenses/gpl-2.0.html).
