@@ -1,4 +1,5 @@
 [![GitHub issues](https://img.shields.io/github/issues-raw/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/issues)
+[![Codacy Badge](https://www.codacy.com/project/badge/23b5d4fb160f4b49b65987a19a4e1a2c)](https://www.codacy.com/app/jeffhann/tremble-js)
 [![GitHub license](https://img.shields.io/github/license/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/blob/master/LICENSE)
 
 # TrembleJS
