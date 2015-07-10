@@ -3,6 +3,7 @@
         {
             "width": 1680,
             "height": 1050
+<<<<<<< HEAD
         },
         {
             "width": 1920,
@@ -11,6 +12,8 @@
         {
             "width": 800,
             "height": 600
+=======
+>>>>>>> 6443855... proof of concept
         }
     ],
     "pages": [

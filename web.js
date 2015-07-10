@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 var Q = require('q');
 var mkdirp = require('mkdirp');
 var uuid = require('uuid');
@@ -56,4 +57,15 @@ app.listen(port, function () {
     process();
     // TODO: OMG callback hell, we need promises!
     // TODO: yah we need to loop through the pages too
+=======
+var express = require('express');
+var app = module.exports = express();
+
+var port = process.env.PORT || 3002;
+
+app.use(express.static('site'));
+
+app.listen(port, function () {
+  console.log('Example app listening at %s', port);
+>>>>>>> 6443855... proof of concept
 });
