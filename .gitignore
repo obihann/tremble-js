@@ -1,4 +1,5 @@
 .env
+.lvimrc
 .DS_Store
 
 site/
