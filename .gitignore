@@ -1,3 +1,8 @@
+.env
+.DS_Store
+
+site/
+
 # Logs
 logs
 *.log

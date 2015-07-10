@@ -1,0 +1,26 @@
+{
+  "name": "tremble-js",
+  "version": "0.0.0",
+  "description": "Automatically builds your website, screenshots every page, and stores them in the cloud grouped by the commit. When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.",
+  "main": "web.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/obihann/tremble-js.git"
+  },
+  "author": "Jeffrey Hann <jeffhann@gmail.com> (http://jeffreyhann.ca)",
+  "license": "GPL-V2",
+  "bugs": {
+    "url": "https://github.com/obihann/tremble-js/issues"
+  },
+  "homepage": "https://github.com/obihann/tremble-js",
+  "dependencies": {
+    "express": "^4.13.1",
+    "lodash": "^3.10.0",
+    "mkdirp": "^0.5.1",
+    "phantom": "^0.7.2",
+    "uuid": "^2.0.1"
+  }
+}
