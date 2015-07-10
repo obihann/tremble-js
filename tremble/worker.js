@@ -18,36 +18,50 @@ port = process.env.PORT || 3002;
 
 app = {
   capture: function(page, res) {
-    var deferred;
+    var deferred, filename;
     deferred = Q.defer();
-    console.log('setting viewport to %s%s', res.width, res.height);
-    page.set('viewportSize', {
-      width: res.width,
-      height: res.height
-    }, function(err) {
-      console.log('opening %s', 'index');
-      page.open('http://localhost:' + port, function() {
-        var filename;
-        filename = commit + '/index.' + res.width + '-' + res.height + '.png';
-        console.log('rendering %s', filename);
-        page.render(filename, function() {
-          deferred.resolve();
-        });
-      });
+    filename = commit + '/index.' + res.width + '-' + res.height + '.png';
+    console.log('rendering %s', filename);
+    page.render(filename, function() {
+      console.log("render of %s complete", filename);
+      return deferred.resolve();
     });
     return deferred.promise;
   },
-  process: function() {
-    mkdirp(commit, function(err) {
+  setRes: function(page, res) {
+    var deferred, size;
+    deferred = Q.defer();
+    console.log('setting viewport to %s%s', res.width, res.height);
+    size = {
+      width: res.width,
+      height: res.height
+    };
+    page.set('viewportSize', size, function() {
+      console.log('viewport size now %sx%s', res.width, res.height);
+      return deferred.resolve();
+    });
+    return deferred.promise;
+  },
+  open: function(page) {
+    var deferred;
+    deferred = Q.defer();
+    console.log('opening %s', 'index');
+    page.open('http://localhost:' + port, function() {
+      console.log("%s, now open", "index.html");
+      return deferred.resolve();
+    });
+    return deferred.promise;
+  },
+  process: function(ph) {
+    return mkdirp(commit, function(err) {
       console.log('mkdir %s', commit);
-      phantom.create(function(ph) {
-        ph.createPage(function(page) {
-          Q.allSettled(_.map(config.resolutions, function(res) {
-            return app.capture(page, res);
-          })).then(function() {
-            console.log('Shutting down phantom');
-            ph.exit();
-          });
+      return ph.createPage(function(page) {
+        return app.open(page).then(function() {
+          Q.all(_.map(config.resolutions, function(res) {
+            return app.setRes(page, res).then(app.capture(page, res));
+          })).done(function() {});
+          console.log('Shutting down phantom');
+          return ph.exit();
         });
       });
     });
@@ -56,4 +70,6 @@ app = {
 
 module["export"] = app;
 
-app.process();
+phantom.create(function(ph) {
+  return app.process(ph);
+});
