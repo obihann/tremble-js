@@ -1,0 +1,14 @@
+{
+    "resolutions": [
+        {
+            "width": 1680,
+            "height": 1050
+        }
+    ],
+    "pages": [
+        {
+            "title": "index",
+            "path": "index.html"
+        }
+    ]
+}
