@@ -1,4 +1,4 @@
-var Q, _, app, config, mkdirp, phantom, port, uuid;
+var Q, _, amqp, app, config, mkdirp, phantom, port, uuid;
 
 Q = require('q');
 
@@ -9,6 +9,8 @@ uuid = require('uuid');
 phantom = require('phantom');
 
 _ = require('lodash');
+
+amqp = require('amqplib');
 
 config = require('./tremble');
 
@@ -69,19 +71,35 @@ app = {
 
 module["export"] = app;
 
-phantom.create(function(ph) {
-  var commit;
-  console.log('Starting phantom');
-  commit = uuid.v4();
-  return Q.all(_.map(config.resolutions, function(res) {
-    config = {
-      ph: ph,
-      commit: commit,
-      res: res
-    };
-    return app.process(config).then(app.open).then(app.setRes).then(app.capture);
-  })).done(function() {
-    console.log('Shutting down phantom');
-    return ph.exit();
+amqp.connect(process.env.RABBITMQ_BIGWIG_URL, function(err, conn) {
+  return conn.createChannel().then(function(ch) {
+    ch.assertQueue('tremble.queue');
+    ch.consume(q, function(msg) {
+      return phantom.create(function(ph) {
+        var commit, ok;
+        console.log('Starting phantom');
+        commit = uuid.v4();
+        Q.all(_.map(config.resolutions, function(res) {
+          config = {
+            ph: ph,
+            commit: commit,
+            res: res
+          };
+          return app.process(config).then(app.open).then(app.setRes).then(app.capture);
+        })).done(function() {
+          console.log('Shutting down phantom');
+          return ph.exit();
+        });
+        ok = ok.then(function() {
+          return ch.prefetch(1);
+        });
+        return ok = ok.then(function() {
+          return ch.consume('tremble.queue', doWork, {
+            noAck: false
+          });
+        });
+      });
+    });
+    return ok;
   });
 });

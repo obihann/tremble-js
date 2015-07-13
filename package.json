@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/obihann/tremble-js",
   "dependencies": {
+    "amqplib": "^0.3.2",
     "express": "^4.13.1",
     "lodash": "^3.10.0",
     "mkdirp": "^0.5.1",

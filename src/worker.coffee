@@ -3,6 +3,7 @@ mkdirp = require('mkdirp')
 uuid = require('uuid')
 phantom = require('phantom')
 _ = require('lodash')
+amqp = require('amqplib')
 config = require('./tremble')
 
 port = process.env.PORT or 3002
@@ -62,21 +63,35 @@ app =
 
 module.export = app
 
-phantom.create (ph) ->
-  console.log 'Starting phantom'
+amqp.connect process.env.RABBITMQ_BIGWIG_URL, (err, conn) ->
+  conn.createChannel().then (ch) ->
+    ch.assertQueue 'tremble.queue'
 
-  commit =  uuid.v4()
+    ch.consume q, (msg) ->
+      phantom.create (ph) ->
+        console.log 'Starting phantom'
+        commit =  uuid.v4()
 
-  Q.all(_.map(config.resolutions, (res) ->
-    config =
-      ph: ph
-      commit: commit
-      res: res
+        Q.all(_.map(config.resolutions, (res) ->
+          config =
+            ph: ph
+            commit: commit
+            res: res
 
-    app.process config
-    .then app.open
-    .then app.setRes
-    .then app.capture
-  )).done ->
-    console.log 'Shutting down phantom'
-    ph.exit()
+          app.process config
+          .then app.open
+          .then app.setRes
+          .then app.capture
+        )).done ->
+          console.log 'Shutting down phantom'
+          ph.exit()
+
+        ok = ok.then(->
+          ch.prefetch 1
+        )
+
+        ok = ok.then(->
+          ch.consume 'tremble.queue', doWork, noAck: false
+        )
+
+    ok
