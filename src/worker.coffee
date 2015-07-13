@@ -3,61 +3,80 @@ mkdirp = require('mkdirp')
 uuid = require('uuid')
 phantom = require('phantom')
 _ = require('lodash')
-commit = uuid.v4()
 config = require('./tremble')
 
 port = process.env.PORT or 3002
 
 app =
-  capture: (page, res) ->
+  capture: (config) ->
     deferred = Q.defer()
 
-    filename = commit + '/index.' + res.width + '-' + res.height + '.png'
+    filename = config.commit + '/index.'
+    filename += config.res.width + '-' + config.res.height + '.png'
     console.log 'rendering %s', filename
 
-    page.render filename, ->
+    config.page.render filename, ->
       console.log "render of %s complete", filename
-      deferred.resolve()
+      deferred.resolve config
 
     return deferred.promise
 
-  setRes: (page, res) ->
+  setRes: (config) ->
     deferred = Q.defer()
-    console.log 'setting viewport to %s%s', res.width, res.height
+    console.log 'setting viewport to %sx%s', config.res.width, config.res.height
 
     size =
-      width: res.width
-      height: res.height
+      width: config.res.width
+      height: config.res.height
 
-    page.set 'viewportSize', size, ->
-      console.log 'viewport size now %sx%s', res.width, res.height
-      deferred.resolve()
+    config.page.set 'viewportSize', size, ->
+      console.log 'viewport size now %sx%s', config.res.width, config.res.height
+      deferred.resolve config
 
     return deferred.promise
 
-  open: (page) ->
+  open: (config) ->
     deferred = Q.defer()
     console.log 'opening %s', 'index'
 
-    page.open 'http://localhost:' + port, () ->
-      console.log("%s, now open", "index.html")
-      deferred.resolve()
+    config.page.open 'http://localhost:' + port, () ->
+      setTimeout(() ->
+        console.log("%s, now open", "index.html")
+
+        deferred.resolve config
+      , 3000)
 
     return deferred.promise
 
-  process: (ph) ->
-    mkdirp commit, (err) ->
-      console.log 'mkdir %s', commit
+  process: (config) ->
+    deferred = Q.defer()
 
-      ph.createPage (page) ->
-        app.open(page).then () ->
-          Q.all(_.map(config.resolutions, (res) ->
-            app.setRes(page, res)
-            .then app.capture(page, res)
-        )).done ->
-          console.log 'Shutting down phantom'
-          ph.exit()
+    mkdirp config.commit, (err) ->
+      console.log 'mkdir %s', config.commit
+
+      config.ph.createPage (page) ->
+        config.page = page
+        deferred.resolve config
+
+    return deferred.promise
 
 module.export = app
+
 phantom.create (ph) ->
-  app.process ph
+  console.log 'Starting phantom'
+
+  commit =  uuid.v4()
+
+  Q.all(_.map(config.resolutions, (res) ->
+    config =
+      ph: ph
+      commit: commit
+      res: res
+
+    app.process config
+    .then app.open
+    .then app.setRes
+    .then app.capture
+  )).done ->
+    console.log 'Shutting down phantom'
+    ph.exit()
