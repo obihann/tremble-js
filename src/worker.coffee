@@ -1,17 +1,12 @@
 Q = require('q')
 mkdirp = require('mkdirp')
-uuid = require('uuid')
-phantom = require('phantom')
 _ = require('lodash')
-config = require('./tremble')
-
-port = process.env.PORT or 3002
 
 app =
   capture: (config) ->
     deferred = Q.defer()
 
-    filename = config.commit + '/index.'
+    filename = config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
     console.log 'rendering %s', filename
 
@@ -37,14 +32,14 @@ app =
 
   open: (config) ->
     deferred = Q.defer()
-    console.log 'opening %s', 'index'
+    console.log 'opening %s', config.route_name
 
-    config.page.open 'http://localhost:' + port, () ->
+    config.page.open config.host + ':' + config.port + '/' + config.route, () ->
       setTimeout(() ->
-        console.log("%s, now open", "index.html")
+        console.log("%s, now open", config.route)
 
         deferred.resolve config
-      , 3000)
+      , config.delay)
 
     return deferred.promise
 
@@ -60,23 +55,4 @@ app =
 
     return deferred.promise
 
-module.export = app
-
-phantom.create (ph) ->
-  console.log 'Starting phantom'
-
-  commit =  uuid.v4()
-
-  Q.all(_.map(config.resolutions, (res) ->
-    config =
-      ph: ph
-      commit: commit
-      res: res
-
-    app.process config
-    .then app.open
-    .then app.setRes
-    .then app.capture
-  )).done ->
-    console.log 'Shutting down phantom'
-    ph.exit()
+module.exports = app

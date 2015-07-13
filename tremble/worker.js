@@ -1,24 +1,17 @@
-var Q, _, app, config, mkdirp, phantom, port, uuid;
+var Q, _, app, mkdirp;
 
 Q = require('q');
 
 mkdirp = require('mkdirp');
 
-uuid = require('uuid');
-
-phantom = require('phantom');
-
 _ = require('lodash');
-
-config = require('./tremble');
-
-port = process.env.PORT || 3002;
 
 app = {
   capture: function(config) {
     var deferred, filename;
     deferred = Q.defer();
-    filename = config.commit + '/index.';
+    console.log(config);
+    filename = config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
     console.log('rendering %s', filename);
     config.page.render(filename, function() {
@@ -44,12 +37,12 @@ app = {
   open: function(config) {
     var deferred;
     deferred = Q.defer();
-    console.log('opening %s', 'index');
-    config.page.open('http://localhost:' + port, function() {
+    console.log('opening %s', config.route_name);
+    config.page.open(config.host + ':' + config.port + '/' + config.route, function() {
       return setTimeout(function() {
-        console.log("%s, now open", "index.html");
+        console.log("%s, now open", config.route);
         return deferred.resolve(config);
-      }, 3000);
+      }, config.delay);
     });
     return deferred.promise;
   },
@@ -67,21 +60,4 @@ app = {
   }
 };
 
-module["export"] = app;
-
-phantom.create(function(ph) {
-  var commit;
-  console.log('Starting phantom');
-  commit = uuid.v4();
-  return Q.all(_.map(config.resolutions, function(res) {
-    config = {
-      ph: ph,
-      commit: commit,
-      res: res
-    };
-    return app.process(config).then(app.open).then(app.setRes).then(app.capture);
-  })).done(function() {
-    console.log('Shutting down phantom');
-    return ph.exit();
-  });
-});
+module.exports = app;
