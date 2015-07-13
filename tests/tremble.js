@@ -11,26 +11,27 @@ var tremble = require('../tremble/worker');
 var port = process.env.PORT || 3002;
 var url = "http://localhost:" + port;
 var commit = uuid.v4();
+var options = {
+  host: 'http://localhost',
+  route_name: 'index',
+  route: 'index.html',
+  delay: 2000,
+  port: port,
+  commit: commit,
+  res: {
+    width: 1680,
+    height: 1050
+  }
+};
 
 describe('TrembleJS', function() {
   describe('worker.process', function(){
     it('should make a new directory and create a new phantonjs page', function(done) {
         phantom.create(function(ph) {
-          var conf = {
-            host: 'http://localhost',
-            route_name: 'index',
-            route: 'index.html',
-            delay: 3000,
-            port: port,
-            ph: ph,
-            commit: commit,
-            res: {
-              width: 1680,
-              height: 1050
-            }
-          };
+          var conf = options;
+          conf.ph = ph;
 
-          tremble.process(conf).done(function() {
+          tremble.process(conf).then(function() {
             var stats = fs.lstatSync(commit);
             assert.equal(stats.isDirectory(), true);
             conf.ph.exit();
@@ -39,22 +40,15 @@ describe('TrembleJS', function() {
           });
         });
     });
+  });
 
+  describe('worker.open', function(){
     it('should render index.html', function(done) {
+        this.timeout(4000);
+
         phantom.create(function(ph) {
-          var conf = {
-            host: 'http://localhost',
-            route_name: 'index',
-            route: 'index.html',
-            delay: 0,
-            port: port,
-            ph: ph,
-            commit: commit,
-            res: {
-              width: 1680,
-              height: 1050
-            }
-          };
+          var conf = options;
+          conf.ph = ph;
 
           conf.ph.createPage(function(page) {
             conf.page = page;

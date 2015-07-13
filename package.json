@@ -18,11 +18,13 @@
   "homepage": "https://github.com/obihann/tremble-js",
   "dependencies": {
     "express": "^4.13.1",
+    "gm": "^1.18.1",
     "lodash": "^3.10.0",
     "mkdirp": "^0.5.1",
     "phantom": "^0.7.2",
     "q": "^1.4.1",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.1",
+    "winston": "^1.0.1"
   },
   "devDependencies": {
     "codacy-coverage": "^1.1.2",
