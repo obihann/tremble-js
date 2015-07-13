@@ -1,18 +1,10 @@
-var Q, _, app, config, mkdirp, phantom, port, uuid;
+var Q, _, app, mkdirp;
 
 Q = require('q');
 
 mkdirp = require('mkdirp');
 
-uuid = require('uuid');
-
-phantom = require('phantom');
-
 _ = require('lodash');
-
-config = require('./tremble');
-
-port = process.env.PORT || 3002;
 
 app = {
   capture: function(config) {
@@ -45,7 +37,7 @@ app = {
     var deferred;
     deferred = Q.defer();
     console.log('opening %s', 'index');
-    config.page.open('http://localhost:' + port, function() {
+    config.page.open('http://localhost:' + config.port, function() {
       return setTimeout(function() {
         console.log("%s, now open", "index.html");
         return deferred.resolve(config);
@@ -67,21 +59,4 @@ app = {
   }
 };
 
-module["export"] = app;
-
-phantom.create(function(ph) {
-  var commit;
-  console.log('Starting phantom');
-  commit = uuid.v4();
-  return Q.all(_.map(config.resolutions, function(res) {
-    config = {
-      ph: ph,
-      commit: commit,
-      res: res
-    };
-    return app.process(config).then(app.open).then(app.setRes).then(app.capture);
-  })).done(function() {
-    console.log('Shutting down phantom');
-    return ph.exit();
-  });
-});
+module.exports = app;
