@@ -36,12 +36,12 @@ app = {
   open: function(config) {
     var deferred;
     deferred = Q.defer();
-    console.log('opening %s', 'index');
-    config.page.open('http://localhost:' + config.port, function() {
+    console.log('opening %s', config.route);
+    config.page.open(config.host + ':' + config.port + '/' + config.route, function() {
       return setTimeout(function() {
-        console.log("%s, now open", "index.html");
+        console.log("%s, now open", config.route);
         return deferred.resolve(config);
-      }, 3000);
+      }, config.delay);
     });
     return deferred.promise;
   },

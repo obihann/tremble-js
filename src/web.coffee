@@ -17,19 +17,23 @@ app.post '/hook', (req, res) ->
     commit =  uuid.v4()
 
     Q.all(_.map(config.resolutions, (res) ->
-      config =
+      conf =
+        host: "http://localhost"
+        route: "index.html"
+        delay: config.delay
         port: port
         ph: ph
         commit: commit
         res: res
 
-      tremble.process config
+      tremble.process conf
       .then tremble.open
       .then tremble.setRes
       .then tremble.capture
     )).done ->
       console.log 'Shutting down phantom'
       ph.exit()
+      res.send "done"
 
 app.listen port, ->
   console.log 'TrembleJS listening at %s', port

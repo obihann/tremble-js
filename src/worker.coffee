@@ -32,14 +32,14 @@ app =
 
   open: (config) ->
     deferred = Q.defer()
-    console.log 'opening %s', 'index'
+    console.log 'opening %s', config.route
 
-    config.page.open 'http://localhost:' + config.port, () ->
+    config.page.open config.host + ':' + config.port + '/' + config.route, () ->
       setTimeout(() ->
-        console.log("%s, now open", "index.html")
+        console.log("%s, now open", config.route)
 
         deferred.resolve config
-      , 3000)
+      , config.delay)
 
     return deferred.promise
 
