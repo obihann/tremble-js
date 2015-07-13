@@ -67,4 +67,29 @@ describe('TrembleJS', function() {
         });
     });
   });
+  describe('worker.setres', function(){
+    it('set the resolution of the viewport to 1680x1050', function(done) {
+        phantom.create(function(ph) {
+          var conf = options;
+          conf.ph = ph;
+
+          conf.ph.createPage(function(page) {
+            conf.page = page;
+
+            conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
+              if(status !== 'success') {
+                throw status;
+              }
+
+              tremble.setRes(conf).then(function(conf) {
+                done();
+              })
+              .fail(function (err) {
+                throw err;
+              });
+            });
+          });
+        });
+    });
+  });
 });

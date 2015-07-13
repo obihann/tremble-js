@@ -5,6 +5,7 @@ _ = require('lodash')
 
 app =
   capture: (config) ->
+
     deferred = Q.defer()
 
     filename = config.commit + '/' + config.route_name + '.'
@@ -25,9 +26,12 @@ app =
       width: config.res.width
       height: config.res.height
 
-    config.page.set 'viewportSize', size, ->
-      winston.log 'verbose', 'viewport size now %sx%s', config.res.width, config.res.height
-      deferred.resolve config
+    config.page.set 'viewportSize', size, (status) ->
+      if status.height == size.height && status.width == status.width
+        winston.log 'verbose', 'viewport size now %sx%s', config.res.width, config.res.height
+        deferred.resolve config
+      else
+        deferred.reject status
 
     return deferred.promise
 
