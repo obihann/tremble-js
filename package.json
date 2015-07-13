@@ -1,10 +1,9 @@
 {
   "name": "tremble-js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Automatically builds your website, screenshots every page, and stores them in the cloud grouped by the commit. When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.",
   "main": "tremble/web.js",
   "scripts": {
-    "lint": "gulp lint",
     "test": "gulp test"
   },
   "repository": {
