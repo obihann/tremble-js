@@ -16,8 +16,6 @@ tremble = require('./worker');
 
 config = require('./tremble');
 
-console.log(tremble);
-
 port = process.env.PORT || 3002;
 
 app.use(express["static"]('site'));

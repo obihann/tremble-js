@@ -7,8 +7,6 @@ app = module.exports = express()
 tremble = require('./worker')
 config = require('./tremble')
 
-console.log tremble
-
 port = process.env.PORT or 3002
 app.use express.static('site')
 
