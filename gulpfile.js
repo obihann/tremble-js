@@ -4,6 +4,18 @@ var watch = require('gulp-watch');
 var jshint = require('gulp-jshint');
 var batch = require('gulp-batch');
 var coffee = require('gulp-coffee');
+var mocha = require('gulp-mocha');
+
+gulp.task('mocha', function () {
+    return gulp.src('tests/tremble.js', {read: false})
+        .pipe(mocha('spec'))
+        .once('error', function () {
+            process.exit(1);
+        })
+        .once('end', function () {
+            process.exit();
+        });
+});
 
 gulp.task('lint', function() {
       return gulp.src('src/*.js').pipe(jshint());
@@ -26,6 +38,7 @@ gulp.task('watch', function () {
 });
 
 gulp.task('default', ['coffee', 'lint'], function() {
-  // place code for your default task here
 });
  
+gulp.task('test', ['mocha'], function() {
+});
