@@ -5,8 +5,8 @@
             "height": 1050
         },
         {
-            "width": 1920,
-            "height": 1080
+            "width": 640,
+            "height": 480
         },
         {
             "width": 800,
@@ -14,10 +14,6 @@
         }
     ],
     "pages": [
-        {
-            "title": "pagetwo",
-            "path": "index.html"
-        },
         {
             "title": "index",
             "path": "index.html"

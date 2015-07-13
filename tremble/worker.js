@@ -10,7 +10,6 @@ app = {
   capture: function(config) {
     var deferred, filename;
     deferred = Q.defer();
-    console.log(config);
     filename = config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
     console.log('rendering %s', filename);
