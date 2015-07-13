@@ -37,11 +37,15 @@ app = {
     var deferred;
     deferred = Q.defer();
     console.log('opening %s', config.route_name);
-    config.page.open(config.host + ':' + config.port + '/' + config.route, function() {
-      return setTimeout(function() {
-        console.log("%s, now open", config.route);
-        return deferred.resolve(config);
-      }, config.delay);
+    config.page.open(config.host + ':' + config.port + '/' + config.route, function(status) {
+      if (status === 'success') {
+        return setTimeout(function() {
+          console.log("%s, now open %s", config.route, status);
+          return deferred.resolve(config);
+        }, config.delay);
+      } else {
+        return deferred.reject(status);
+      }
     });
     return deferred.promise;
   },
