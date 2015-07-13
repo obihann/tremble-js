@@ -30,9 +30,12 @@ app = {
       height: config.res.height
     };
     config.page.set('viewportSize', size, function(status) {
-      console.log(status);
-      winston.log('verbose', 'viewport size now %sx%s', config.res.width, config.res.height);
-      return deferred.resolve(config);
+      if (status.height === size.height && status.width === status.width) {
+        winston.log('verbose', 'viewport size now %sx%s', config.res.width, config.res.height);
+        return deferred.resolve(config);
+      } else {
+        return deferred.reject(status);
+      }
     });
     return deferred.promise;
   },
