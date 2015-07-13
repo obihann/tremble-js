@@ -1,4 +1,4 @@
-var Q, _, app, commit, config, mkdirp, phantom, port, uuid;
+var Q, _, app, config, mkdirp, phantom, port, uuid;
 
 Q = require('q');
 
@@ -10,66 +10,78 @@ phantom = require('phantom');
 
 _ = require('lodash');
 
-commit = uuid.v4();
-
 config = require('./tremble');
 
 port = process.env.PORT || 3002;
 
 app = {
-  capture: function(page, res) {
+  capture: function(config) {
     var deferred, filename;
     deferred = Q.defer();
-    filename = commit + '/index.' + res.width + '-' + res.height + '.png';
+    filename = config.commit + '/index.';
+    filename += config.res.width + '-' + config.res.height + '.png';
     console.log('rendering %s', filename);
-    page.render(filename, function() {
+    config.page.render(filename, function() {
       console.log("render of %s complete", filename);
-      return deferred.resolve();
+      return deferred.resolve(config);
     });
     return deferred.promise;
   },
-  setRes: function(page, res) {
+  setRes: function(config) {
     var deferred, size;
     deferred = Q.defer();
-    console.log('setting viewport to %s%s', res.width, res.height);
+    console.log('setting viewport to %sx%s', config.res.width, config.res.height);
     size = {
-      width: res.width,
-      height: res.height
+      width: config.res.width,
+      height: config.res.height
     };
-    page.set('viewportSize', size, function() {
-      console.log('viewport size now %sx%s', res.width, res.height);
-      return deferred.resolve();
+    config.page.set('viewportSize', size, function() {
+      console.log('viewport size now %sx%s', config.res.width, config.res.height);
+      return deferred.resolve(config);
     });
     return deferred.promise;
   },
-  open: function(page) {
+  open: function(config) {
     var deferred;
     deferred = Q.defer();
     console.log('opening %s', 'index');
-    page.open('http://localhost:' + port, function() {
-      console.log("%s, now open", "index.html");
-      return deferred.resolve();
+    config.page.open('http://localhost:' + port, function() {
+      return setTimeout(function() {
+        console.log("%s, now open", "index.html");
+        return deferred.resolve(config);
+      }, 3000);
     });
     return deferred.promise;
   },
-  process: function(ph) {
-    return mkdirp(commit, function(err) {
-      console.log('mkdir %s', commit);
-      return ph.createPage(function(page) {
-        return app.open(page).then(function() {
-          Q.all(_.map(config.resolutions, function(res) {
-            return app.setRes(page, res).then(app.capture(page, res));
-          })).done(function() {});
-          console.log('Shutting down phantom');
-          return ph.exit();
-        });
+  process: function(config) {
+    var deferred;
+    deferred = Q.defer();
+    mkdirp(config.commit, function(err) {
+      console.log('mkdir %s', config.commit);
+      return config.ph.createPage(function(page) {
+        config.page = page;
+        return deferred.resolve(config);
       });
     });
+    return deferred.promise;
   }
 };
 
 module["export"] = app;
 
 phantom.create(function(ph) {
-  return app.process(ph);
+  var commit;
+  console.log('Starting phantom');
+  commit = uuid.v4();
+  return Q.all(_.map(config.resolutions, function(res) {
+    config = {
+      ph: ph,
+      commit: commit,
+      res: res
+    };
+    return app.process(config).then(app.open).then(app.setRes).then(app.capture);
+  })).done(function() {
+    console.log('Shutting down phantom');
+    return ph.exit();
+  });
 });
