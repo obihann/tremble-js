@@ -34,12 +34,16 @@ app =
     deferred = Q.defer()
     console.log 'opening %s', config.route_name
 
-    config.page.open config.host + ':' + config.port + '/' + config.route, () ->
-      setTimeout(() ->
-        console.log("%s, now open", config.route)
+    # todo: this should return status and be tested
+    config.page.open config.host + ':' + config.port + '/' + config.route, (status) ->
+      if status == 'success'
+        setTimeout(() ->
+          console.log("%s, now open %s", config.route, status)
 
-        deferred.resolve config
-      , config.delay)
+          deferred.resolve config
+        , config.delay)
+      else
+        deferred.reject status
 
     return deferred.promise
 
