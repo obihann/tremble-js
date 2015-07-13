@@ -16,20 +16,23 @@ app.post '/hook', (req, res) ->
 
     commit =  uuid.v4()
 
-    Q.all(_.map(config.resolutions, (res) ->
-      conf =
-        host: "http://localhost"
-        route: "index.html"
-        delay: config.delay
-        port: port
-        ph: ph
-        commit: commit
-        res: res
+    Q.all(_.map(config.pages, (page) ->
+      Q.all(_.map(config.resolutions, (res) ->
+        conf =
+          host: "http://localhost"
+          route_name: page.title
+          route: page.path
+          delay: config.delay
+          port: port
+          ph: ph
+          commit: commit
+          res: res
 
-      tremble.process conf
-      .then tremble.open
-      .then tremble.setRes
-      .then tremble.capture
+        tremble.process conf
+        .then tremble.open
+        .then tremble.setRes
+        .then tremble.capture
+      ))
     )).done ->
       console.log 'Shutting down phantom'
       ph.exit()

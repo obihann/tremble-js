@@ -15,8 +15,13 @@
     ],
     "pages": [
         {
+            "title": "pagetwo",
+            "path": "index.html"
+        },
+        {
             "title": "index",
             "path": "index.html"
         }
-    ]
+    ],
+    "delay": 3000
 }

@@ -10,7 +10,8 @@ app = {
   capture: function(config) {
     var deferred, filename;
     deferred = Q.defer();
-    filename = config.commit + '/index.';
+    console.log(config);
+    filename = config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
     console.log('rendering %s', filename);
     config.page.render(filename, function() {
@@ -36,7 +37,7 @@ app = {
   open: function(config) {
     var deferred;
     deferred = Q.defer();
-    console.log('opening %s', config.route);
+    console.log('opening %s', config.route_name);
     config.page.open(config.host + ':' + config.port + '/' + config.route, function() {
       return setTimeout(function() {
         console.log("%s, now open", config.route);
