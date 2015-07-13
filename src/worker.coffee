@@ -31,6 +31,7 @@ app =
         winston.log 'verbose', 'viewport size now %sx%s', config.res.width, config.res.height
         deferred.resolve config
       else
+        winston.error status
         deferred.reject status
 
     return deferred.promise
@@ -48,6 +49,7 @@ app =
           deferred.resolve config
         , config.delay)
       else
+        winston.error status
         deferred.reject status
 
     return deferred.promise
@@ -56,11 +58,15 @@ app =
     deferred = Q.defer()
 
     mkdirp config.commit, (err) ->
-      winston.log 'verbose', 'mkdir %s', config.commit
+      if err == null
+        winston.log 'verbose', 'mkdir %s', config.commit
 
-      config.ph.createPage (page) ->
-        config.page = page
-        deferred.resolve config
+        config.ph.createPage (page) ->
+          config.page = page
+          deferred.resolve config
+      else
+        winston.error err
+        deferred.reject err
 
     return deferred.promise
 

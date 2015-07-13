@@ -34,6 +34,7 @@ app = {
         winston.log('verbose', 'viewport size now %sx%s', config.res.width, config.res.height);
         return deferred.resolve(config);
       } else {
+        winston.error(status);
         return deferred.reject(status);
       }
     });
@@ -50,6 +51,7 @@ app = {
           return deferred.resolve(config);
         }, config.delay);
       } else {
+        winston.error(status);
         return deferred.reject(status);
       }
     });
@@ -59,11 +61,16 @@ app = {
     var deferred;
     deferred = Q.defer();
     mkdirp(config.commit, function(err) {
-      winston.log('verbose', 'mkdir %s', config.commit);
-      return config.ph.createPage(function(page) {
-        config.page = page;
-        return deferred.resolve(config);
-      });
+      if (err === null) {
+        winston.log('verbose', 'mkdir %s', config.commit);
+        return config.ph.createPage(function(page) {
+          config.page = page;
+          return deferred.resolve(config);
+        });
+      } else {
+        winston.error(err);
+        return deferred.reject(err);
+      }
     });
     return deferred.promise;
   }

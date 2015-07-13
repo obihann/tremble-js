@@ -92,4 +92,43 @@ describe('TrembleJS', function() {
         });
     });
   });
+  describe('worker.capture', function(){
+    it('render an image of the site', function(done) {
+        phantom.create(function(ph) {
+          var conf = options;
+          conf.ph = ph;
+
+          conf.ph.createPage(function(page) {
+            conf.page = page;
+
+            conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
+              if(status !== 'success') {
+                throw status;
+              }
+
+              var size = {
+                width: conf.res.width,
+                height: conf.res.height
+              };
+
+              conf.page.set('viewportSize', size, function (status) {
+                tremble.capture(conf).then(function(conf) {
+                  fs.readdir(conf.commit, function (err, files) {
+                    if (err) {
+                      throw err;
+                    }
+
+                    if (files.indexOf("index.1680-1050.png") > -1) {
+                      done();
+                    } else {
+                      assert.fail(files, "index.1680-1050.png");
+                    }
+                  });
+                });
+              });
+            });
+          });
+        });
+    });
+  });
 });
