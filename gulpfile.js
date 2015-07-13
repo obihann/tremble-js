@@ -38,8 +38,8 @@ gulp.task('watch', function () {
     }));
 });
 
-gulp.task('default', ['coffee', 'lint', 'mocha'], function() {
+gulp.task('default', ['coffee', 'lint'], function() {
 });
  
-gulp.task('test', ['lint', 'mocha'], function() {
+gulp.task('test', ['mocha'], function() {
 });
