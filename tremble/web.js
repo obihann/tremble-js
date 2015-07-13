@@ -25,18 +25,21 @@ app.post('/hook', function(req, res) {
     var commit;
     console.log('Starting phantom');
     commit = uuid.v4();
-    return Q.all(_.map(config.resolutions, function(res) {
-      var conf;
-      conf = {
-        host: "http://localhost",
-        route: "index.html",
-        delay: config.delay,
-        port: port,
-        ph: ph,
-        commit: commit,
-        res: res
-      };
-      return tremble.process(conf).then(tremble.open).then(tremble.setRes).then(tremble.capture);
+    return Q.all(_.map(config.pages, function(page) {
+      return Q.all(_.map(config.resolutions, function(res) {
+        var conf;
+        conf = {
+          host: "http://localhost",
+          route_name: page.title,
+          route: page.path,
+          delay: config.delay,
+          port: port,
+          ph: ph,
+          commit: commit,
+          res: res
+        };
+        return tremble.process(conf).then(tremble.open).then(tremble.setRes).then(tremble.capture);
+      }));
     })).done(function() {
       console.log('Shutting down phantom');
       ph.exit();

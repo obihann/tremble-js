@@ -6,7 +6,7 @@ app =
   capture: (config) ->
     deferred = Q.defer()
 
-    filename = config.commit + '/index.'
+    filename = config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
     console.log 'rendering %s', filename
 
@@ -32,7 +32,7 @@ app =
 
   open: (config) ->
     deferred = Q.defer()
-    console.log 'opening %s', config.route
+    console.log 'opening %s', config.route_name
 
     config.page.open config.host + ':' + config.port + '/' + config.route, () ->
       setTimeout(() ->
