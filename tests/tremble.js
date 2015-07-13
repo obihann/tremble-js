@@ -1,5 +1,6 @@
 var Q = require('q');
 var fs = require('fs');
+var gm = require('gm');
 var phantom = require('phantom');
 var uuid = require('uuid');
 var assert = require('assert');
@@ -24,111 +25,122 @@ var options = {
   }
 };
 
+after(function() {
+  fs.unlinkSync(commit + '/index.1680-1050.png');
+  fs.rmdir(commit);
+});
+
 describe('TrembleJS', function() {
   describe('worker.process', function(){
     it('should make a new directory and create a new phantonjs page', function(done) {
-        phantom.create(function(ph) {
-          var conf = options;
-          conf.ph = ph;
+      phantom.create(function(ph) {
+        var conf = options;
+        conf.ph = ph;
 
-          tremble.process(conf).then(function() {
-            var stats = fs.lstatSync(commit);
-            assert.equal(stats.isDirectory(), true);
-            conf.ph.exit();
-            fs.rmdir(commit);
-            done();
-          });
+        tremble.process(conf).then(function() {
+          var stats = fs.lstatSync(commit);
+          assert.equal(stats.isDirectory(), true);
+          conf.ph.exit();
+          done();
         });
+      });
     });
   });
 
   describe('worker.open', function(){
     it('should render index.html', function(done) {
-        this.timeout(4000);
+      this.timeout(4000);
 
-        phantom.create(function(ph) {
-          var conf = options;
-          conf.ph = ph;
+      phantom.create(function(ph) {
+        var conf = options;
+        conf.ph = ph;
 
-          conf.ph.createPage(function(page) {
-            conf.page = page;
+        conf.ph.createPage(function(page) {
+          conf.page = page;
 
-            tremble.open(conf).then(function(config) {
-              config.page.evaluate(function () { return document.title; }, function (result) {
-                assert.equal(result, 'Git Mirror Sync');
-                config.ph.exit();
-                done();
-              });
-            })
-            .fail(function(err) {
-              throw err;
+          tremble.open(conf).then(function(config) {
+            config.page.evaluate(function () { return document.title; }, function (result) {
+              assert.equal(result, 'Git Mirror Sync');
+              config.ph.exit();
+              done();
             });
+          })
+          .fail(function(err) {
+            throw err;
           });
         });
+      });
     });
   });
   describe('worker.setres', function(){
     it('set the resolution of the viewport to 1680x1050', function(done) {
-        phantom.create(function(ph) {
-          var conf = options;
-          conf.ph = ph;
+      phantom.create(function(ph) {
+        var conf = options;
+        conf.ph = ph;
 
-          conf.ph.createPage(function(page) {
-            conf.page = page;
+        conf.ph.createPage(function(page) {
+          conf.page = page;
 
-            conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
-              if(status !== 'success') {
-                throw status;
-              }
+          conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
+            if(status !== 'success') {
+              throw status;
+            }
 
-              tremble.setRes(conf).then(function(conf) {
-                done();
-              })
-              .fail(function (err) {
-                throw err;
-              });
+            tremble.setRes(conf).then(function(conf) {
+              done();
+            })
+            .fail(function (err) {
+              throw err;
             });
           });
         });
+      });
     });
   });
   describe('worker.capture', function(){
-    it('render an image of the site', function(done) {
-        phantom.create(function(ph) {
-          var conf = options;
-          conf.ph = ph;
+    it('should render an image of the site that matches the sample image', function(done) {
+      phantom.create(function(ph) {
+        var conf = options;
+        conf.ph = ph;
 
-          conf.ph.createPage(function(page) {
-            conf.page = page;
+        conf.ph.createPage(function(page) {
+          conf.page = page;
 
-            conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
-              if(status !== 'success') {
-                throw status;
-              }
+          conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
+            if(status !== 'success') {
+              throw status;
+            }
 
-              var size = {
-                width: conf.res.width,
-                height: conf.res.height
-              };
+            var size = {
+              width: conf.res.width,
+              height: conf.res.height
+            };
 
-              conf.page.set('viewportSize', size, function (status) {
-                tremble.capture(conf).then(function(conf) {
-                  fs.readdir(conf.commit, function (err, files) {
-                    if (err) {
-                      throw err;
-                    }
+            conf.page.set('viewportSize', size, function (status) {
+              tremble.capture(conf).then(function(conf) {
+                fs.readdir(conf.commit, function (err, files) {
+                  if (err) {
+                    throw err;
+                  }
 
-                    if (files.indexOf("index.1680-1050.png") > -1) {
+                  if (files.indexOf("index.1680-1050.png") > -1) {
+                    gm.compare(conf.commit + '/index.1680-1050.png', 'tests/sample/index.1680-1050.png', function (err, isEqual) {
+                      if (err) {
+                        throw err;
+                      }
+
+                      assert.equal(isEqual, true);
                       done();
-                    } else {
-                      assert.fail(files, "index.1680-1050.png");
-                    }
-                  });
+                    });
+                  } else {
+                    assert.fail(files, "index.1680-1050.png");
+                  }
                 });
               });
             });
           });
         });
+      });
     });
   });
 });
