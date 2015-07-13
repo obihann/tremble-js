@@ -7,8 +7,7 @@ var coffee = require('gulp-coffee');
 var mocha = require('gulp-mocha');
 
 gulp.task('mocha', function () {
-    return gulp.src('test.js', {read: false})
-        // gulp-mocha needs filepaths so you can't have any plugins before it 
+    return gulp.src('tests/tremble.js', {read: false})
         .pipe(mocha('spec'))
         .once('error', function () {
             process.exit(1);
