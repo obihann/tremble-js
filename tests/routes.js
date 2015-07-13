@@ -3,12 +3,11 @@ var uuid = require('uuid');
 var assert = require('assert');
 var should = require('should');
 var request = require('superagent');
-var app = require('./tremble/web.js');
+var app = require('../tremble/web.js');
+var tremble = require('../tremble/worker');
 
 var port = process.env.PORT || 3002;
 var url = "http://localhost:" + port;
-
-var tremble = require('./tremble/worker');
 
 describe('Routes', function() {
   describe('GET /', function() {
