@@ -4,7 +4,7 @@
   "description": "Automatically builds your website, screenshots every page, and stores them in the cloud grouped by the commit. When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.",
   "main": "bin/web.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "mocha tests/"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,6 @@
     "winston": "^1.0.1"
   },
   "devDependencies": {
-    "codacy-coverage": "^1.1.2",
     "coffeelint-stylish": "^0.1.2",
     "coveralls": "^2.11.2",
     "describe": "^1.2.0",

@@ -4,7 +4,6 @@ var watch = require('gulp-watch');
 var jshint = require('gulp-jshint');
 var batch = require('gulp-batch');
 var coffee = require('gulp-coffee');
-var mocha = require('gulp-mocha');
 var coffeelint = require('gulp-coffeelint');
 var stylish = require('coffeelint-stylish');
 
@@ -20,19 +19,6 @@ gulp.task('coffeelint', function () {
   .pipe(coffeelint.reporter(stylish))
   .pipe(coffeelint.reporter('fail'));
 });
-
-// mocha testing
-gulp.task('mocha', function () {
-  gulp.src('tests/tremble.js', {read: false})
-  .pipe(mocha('spec'))
-  .once('error', function () {
-    process.exit(1);
-  })
-  .once('end', function () {
-    process.exit();
-  });
-});
-
 // js linting
 gulp.task('lint', function() {
   gulp.src('src/*.js')
@@ -73,7 +59,4 @@ gulp.task('watch', function () {
 });
 
 gulp.task('default', ['coffeelint', 'coffee', 'lint'], function() {
-});
-
-gulp.task('test', ['default', 'mocha'], function() {
 });
