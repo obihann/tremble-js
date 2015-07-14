@@ -1,8 +1,16 @@
 {
     "resolutions": [
         {
-            "width": "dog",
-            "height": "cat"
+            "width": 1680,
+            "height": 1050
+        },
+        {
+            "width": 640,
+            "height": 480
+        },
+        {
+            "width": 800,
+            "height": 600
         }
     ],
     "pages": [

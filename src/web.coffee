@@ -14,7 +14,7 @@ app.use express.static('site')
 
 app.post '/hook', (req, res) ->
   phantom.create (ph) ->
-    console.log 'Starting phantom'
+    winston.log 'verbose', 'Starting phantom'
 
     commit =  uuid.v4()
 
@@ -36,12 +36,9 @@ app.post '/hook', (req, res) ->
         .then tremble.capture
       ))
     )).done ->
-      console.log 'Shutting down phantom'
+      winston.log 'verbose', 'Shutting down phantom'
       ph.exit()
       res.send "done"
 
 app.listen port, ->
-  console.log 'TrembleJS listening at %s', port
-  # TODO: OMG callback hell, we need promises!
-  # TODO: yah we need to loop through the pages tfilesoo
-  return
+  winston.log 'info', 'TrembleJS listening at %s', port
