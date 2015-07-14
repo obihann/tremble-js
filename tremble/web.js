@@ -1,4 +1,6 @@
-var Q, _, app, config, express, phantom, port, tremble, uuid;
+var Q, _, app, config, express, phantom, port, tremble, uuid, winston;
+
+winston = require('winston');
 
 _ = require('lodash');
 
@@ -16,6 +18,8 @@ tremble = require('./worker');
 
 config = require('./tremble');
 
+winston.level = process.env.WINSTON_LEVEL;
+
 port = process.env.PORT || 3002;
 
 app.use(express["static"]('site'));
@@ -23,7 +27,7 @@ app.use(express["static"]('site'));
 app.post('/hook', function(req, res) {
   return phantom.create(function(ph) {
     var commit;
-    console.log('Starting phantom');
+    winston.log('verbose', 'Starting phantom');
     commit = uuid.v4();
     return Q.all(_.map(config.pages, function(page) {
       return Q.all(_.map(config.resolutions, function(res) {
@@ -41,7 +45,7 @@ app.post('/hook', function(req, res) {
         return tremble.process(conf).then(tremble.open).then(tremble.setRes).then(tremble.capture);
       }));
     })).done(function() {
-      console.log('Shutting down phantom');
+      winston.log('verbose', 'Shutting down phantom');
       ph.exit();
       return res.send("done");
     });
@@ -49,5 +53,5 @@ app.post('/hook', function(req, res) {
 });
 
 app.listen(port, function() {
-  console.log('TrembleJS listening at %s', port);
+  return winston.log('info', 'TrembleJS listening at %s', port);
 });
