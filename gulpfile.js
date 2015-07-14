@@ -23,13 +23,13 @@ gulp.task('coffeelint', function () {
 gulp.task('lint', function() {
   gulp.src('src/*.js')
   .pipe(jshint())
-  .pipe(jshint.reporter('jshint-stylish'))
-  .pipe(jshint.reporter('fail'));
+  .pipe(jshint.reporter(stylish))
+  .pipe(jshint.reporter('default'));
 
   gulp.src('tests/*.js')
   .pipe(jshint())
-  .pipe(jshint.reporter('jshint-stylish'))
-  .pipe(jshint.reporter('fail'));
+  .pipe(jshint.reporter(stylish))
+  .pipe(jshint.reporter('default'));
 });
 
 // coffeescript build

@@ -16,21 +16,25 @@ tremble = require('../bin/worker')
 # configure app
 port    = process.env.PORT || 3002
 url     = 'http://localhost:' + port
-commit  = uuid.v4()
 options =
   host: 'http://localhost'
   route_name: 'index'
   route: 'index.html'
   delay: 2000
   port: port
-  commit: commit
+  commit: uuid.v4()
   res:
     width: 1680
     height: 1050
 
+beforeEach () ->
+  options.res.width = 1680
+  options.res.height = 1050
+  options
+
 after () ->
-  fs.unlinkSync commit + '/index.1680-1050.png'
-  fs.rmdir commit
+  #fs.unlinkSync commit + '/index.1680-1050.png'
+  fs.rmdir options.commit
   options.ph.exit()
 
 describe 'TrembleJS', () ->
@@ -62,6 +66,16 @@ describe 'TrembleJS', () ->
           throw err
 
   describe 'worker.setres', () ->
+    it 'set the resolution of the viewport to 1680x1050', (done) ->
+      pagePath = options.host + ':' + options.port + '/' + options.route
+      options.page.open pagePath, (status) ->
+        throw status if(status != 'success')
+
+        tremble.setRes(options).then (config) ->
+          done()
+        .fail (err) ->
+          throw err
+
     it 'fail when setting the resolution of the viewport to dogxcat', (done) ->
       pagePath = options.host + ':' + options.port + '/' + options.route
       options.page.open pagePath, (status) ->
@@ -77,20 +91,6 @@ describe 'TrembleJS', () ->
           assert.equal err.height, 300
           assert.equal err.width, 400
           done()
-
-    it 'set the resolution of the viewport to 1680x1050', (done) ->
-      pagePath = options.host + ':' + options.port + '/' + options.route
-      options.page.open pagePath, (status) ->
-        throw status if(status != 'success')
-
-        options.res =
-          width: 1680
-          height: 1050
-
-        tremble.setRes(options).then (config) ->
-          done()
-        .fail (err) ->
-          throw err
 
   describe 'worker.capture', () ->
     it 'should render an image of the site that matches the sample image',
