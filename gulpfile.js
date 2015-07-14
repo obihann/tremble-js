@@ -54,12 +54,12 @@ gulp.task('coffee', function() {
 
   gulp.src('src/tremble/*.coffee')
   .pipe(coffee({bare: true}).on('error', gutil.log))
-  .pipe(gulp.dest('tremble/'));
+  .pipe(gulp.dest('bin/'));
 });
 
 // watch all js files for change
 gulp.task('watch', function () {
-  watch('tremble/*.js', batch(function (events, done) {
+  watch('bin/*.js', batch(function (events, done) {
     gulp.start('lint', done);
   }));
 
@@ -75,5 +75,5 @@ gulp.task('watch', function () {
 gulp.task('default', ['coffeelint', 'coffee', 'lint'], function() {
 });
 
-gulp.task('test', ['mocha'], function() {
+gulp.task('test', ['default', 'mocha'], function() {
 });
