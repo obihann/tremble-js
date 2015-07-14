@@ -1,34 +1,38 @@
-Q = require('q');
-var uuid = require('uuid');
-var assert = require('assert');
-var should = require('should');
-var request = require('superagent');
-var app = require('../tremble/web.js');
-var tremble = require('../tremble/worker');
+var Q, app, assert, port, request, should, tremble, url, uuid;
 
-var port = process.env.PORT || 3002;
-var url = "http://localhost:" + port;
+Q = require('q');
+
+uuid = require('uuid');
+
+assert = require('assert');
+
+should = require('should');
+
+request = require('superagent');
+
+app = require('../tremble/web.js');
+
+tremble = require('../tremble/worker');
+
+port = process.env.PORT || 3002;
+
+url = "http://localhost:" + port;
 
 describe('Routes', function() {
   describe('GET /', function() {
-    it('check default route', function(done) {
-      request
-      .get(url + '/')
-      .end(function(err, res) {
+    return it('check default route', function(done) {
+      return request.get(url + '/').end(function(err, res) {
         assert.equal(res.status, 200);
-        done();
+        return done();
       });
     });
   });
-  
-  describe('POST /hook', function() {
+  return describe('POST /hook', function() {
     this.timeout(10000);
-    it('check default route', function(done) {
-      request
-      .post(url + '/hook')
-      .end(function(err, res) {
+    return it('check default route', function(done) {
+      return request.post(url + '/hook').end(function(err, res) {
         assert.equal(res.status, 200);
-        done();
+        return done();
       });
     });
   });

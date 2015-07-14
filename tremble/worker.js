@@ -41,10 +41,11 @@ app = {
     return deferred.promise;
   },
   open: function(config) {
-    var deferred;
+    var deferred, pagePath;
     deferred = Q.defer();
     winston.log('verbose', 'opening %s', config.route_name);
-    config.page.open(config.host + ':' + config.port + '/' + config.route, function(status) {
+    pagePath = config.host + ':' + config.port + '/' + config.route;
+    config.page.open(pagePath, function(status) {
       if (status === 'success') {
         return setTimeout(function() {
           winston.log('verbose', '%s, now open %s', config.route, status);
