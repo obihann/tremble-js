@@ -1,3 +1,4 @@
+winston = require('winston')
 _ = require('lodash')
 Q = require('q')
 phantom = require('phantom')
@@ -7,6 +8,7 @@ app = module.exports = express()
 tremble = require('./worker')
 config = require('./tremble')
 
+winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
 app.use express.static('site')
 
@@ -41,5 +43,5 @@ app.post '/hook', (req, res) ->
 app.listen port, ->
   console.log 'TrembleJS listening at %s', port
   # TODO: OMG callback hell, we need promises!
-  # TODO: yah we need to loop through the pages too
+  # TODO: yah we need to loop through the pages tfilesoo
   return

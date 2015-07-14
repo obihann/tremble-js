@@ -1,4 +1,6 @@
-var Q, _, app, config, express, phantom, port, tremble, uuid;
+var Q, _, app, config, express, phantom, port, tremble, uuid, winston;
+
+winston = require('winston');
 
 _ = require('lodash');
 
@@ -15,6 +17,8 @@ app = module.exports = express();
 tremble = require('./worker');
 
 config = require('./tremble');
+
+winston.level = process.env.WINSTON_LEVEL;
 
 port = process.env.PORT || 3002;
 

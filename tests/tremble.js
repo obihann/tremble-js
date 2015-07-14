@@ -4,6 +4,7 @@ var gm = require('gm');
 var phantom = require('phantom');
 var uuid = require('uuid');
 var assert = require('assert');
+var expect = require('expect');
 var should = require('should');
 var request = require('superagent');
 var app = require('../tremble/web.js');
@@ -73,6 +74,37 @@ describe('TrembleJS', function() {
     });
   });
   describe('worker.setres', function(){
+    it('fail when setting the resolution of the viewport to dogxcat', function(done) {
+      phantom.create(function(ph) {
+        var conf = options;
+        conf.ph = ph;
+
+        conf.ph.createPage(function(page) {
+          conf.page = page;
+
+          conf.page.open(conf.host + ':' + conf.port + '/' + conf.route, function (status) {
+            if(status !== 'success') {
+              throw status;
+            }
+
+            conf.res = {
+              width: 'dog',
+              height: 'cat'
+            };
+
+            tremble.setRes(conf).then(function(conf) {
+              throw new Error("resolution should not be set to an invalid type");
+            })
+            .fail(function (err) {
+              assert.equal(err.height, 300);
+              assert.equal(err.width, 400);
+              done();
+            });
+          });
+        });
+      });
+    });
+
     it('set the resolution of the viewport to 1680x1050', function(done) {
       phantom.create(function(ph) {
         var conf = options;
@@ -86,7 +118,14 @@ describe('TrembleJS', function() {
               throw status;
             }
 
+            conf.res = {
+              width: 1680,
+              height: 1050
+            };
+
             tremble.setRes(conf).then(function(conf) {
+              //assert.equal(err.height, 300);
+              //assert.equal(err.width, 400);
               done();
             })
             .fail(function (err) {
@@ -97,6 +136,7 @@ describe('TrembleJS', function() {
       });
     });
   });
+
   describe('worker.capture', function(){
     it('should render an image of the site that matches the sample image', function(done) {
       phantom.create(function(ph) {
