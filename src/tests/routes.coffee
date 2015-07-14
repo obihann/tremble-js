@@ -6,8 +6,8 @@ should  = require 'should'
 request = require 'superagent'
 
 # load local modules
-app     = require '../tremble/web.js'
-tremble = require '../tremble/worker'
+app     = require '../bin/web.js'
+tremble = require '../bin/worker'
 
 # configure app
 port    = process.env.PORT || 3002
