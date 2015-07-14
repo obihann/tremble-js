@@ -2,6 +2,8 @@
 .lvimrc
 .DS_Store
 
+bin/*.js
+
 # Logs
 logs
 *.log
