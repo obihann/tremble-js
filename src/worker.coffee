@@ -1,4 +1,8 @@
 winston = require('winston')
+mongoose = require('mongoose')
+express = require('express')
+session = require('express-session')
+MongoStore = require('connect-mongo')(session)
 Q = require('q')
 mkdirp = require('mkdirp')
 _ = require('lodash')

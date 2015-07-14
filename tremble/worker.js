@@ -1,6 +1,14 @@
-var Q, _, app, mkdirp, winston;
+var MongoStore, Q, _, app, express, mkdirp, mongoose, session, winston;
 
 winston = require('winston');
+
+mongoose = require('mongoose');
+
+express = require('express');
+
+session = require('express-session');
+
+MongoStore = require('connect-mongo')(session);
 
 Q = require('q');
 
