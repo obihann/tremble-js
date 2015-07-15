@@ -132,7 +132,7 @@ describe 'TrembleJS', ->
     return
   
   describe 'worker.capture', ->
-    it 'should render an image of the site that matches the sample image', (done) ->
+    it 'should render an image of the site', (done) ->
       phantom.create (ph) ->
         conf = options
         conf.ph = ph
@@ -151,27 +151,20 @@ describe 'TrembleJS', ->
             conf.page.set 'viewportSize', size, (status) ->
               tremble.capture(conf).then (conf) ->
                 fs.readdir conf.commit, (err, files) ->
-                  if err
-                    throw err
-
                   if files.indexOf('index.1680-1050.png') > -1
-                    newImg = conf.commit + '/index.1680-1050.png'
-                    sampleImg = 'tests/sample/index.1680-1050.png'
-                    gm.compare newImg, sampleImg, (err, isEqual) ->
-                      if err
-                        throw err
+                    throw err if err
 
-                      assert.equal isEqual, true
-                      done()
+                    done()
                   else
                     assert.fail files, 'index.1680-1050.png'
 
-                  return
-                return
-              return
-            return
-          return
-        return
-      return
-    return
-  return
+    it 'rendered images should match the sample image', (done) ->
+      newImg = options.commit + '/index.1680-1050.png'
+      sampleImg = 'tests/sample/index.1680-1050.png'
+
+      gm.compare newImg, sampleImg, (err, isEqual) ->
+        if err
+          throw err
+
+        assert.equal isEqual, true
+        done()
