@@ -1,120 +1,177 @@
 # load npm modules
-Q       = require('q')
-fs      = require('fs')
-gm      = require('gm')
+Q = require('q')
+fs = require('fs')
+gm = require('gm')
 phantom = require('phantom')
-uuid    = require('uuid')
-assert  = require('assert')
-expect  = require('expect')
-should  = require('should')
+uuid = require('uuid')
+assert = require('assert')
+expect = require('expect')
+should = require('should')
 request = require('superagent')
 
 # load local modules
-app     = require('../bin/web.js')
+app = require('../bin/web.js')
 tremble = require('../bin/worker')
 
 # configure app
-port    = process.env.PORT || 3002
-url     = 'http://localhost:' + port
+port = process.env.PORT or 3002
+url = 'http://localhost:' + port
+commit = uuid.v4()
 options =
   host: 'http://localhost'
   route_name: 'index'
   route: 'index.html'
   delay: 2000
   port: port
-  commit: uuid.v4()
+  commit: commit
   res:
     width: 1680
     height: 1050
 
-beforeEach () ->
-  options.res.width = 1680
-  options.res.height = 1050
-  options
+# mocha hooks
+after ->
+  fs.unlinkSync commit + '/index.1680-1050.png'
+  fs.rmdir commit
+  return
 
-after () ->
-  #fs.unlinkSync commit + '/index.1680-1050.png'
-  fs.rmdir options.commit
-  options.ph.exit()
-
-describe 'TrembleJS', () ->
-  describe 'worker.process', () ->
+# unit tests
+describe 'TrembleJS', ->
+  describe 'worker.process', ->
     it 'should make a new directory and create a new phantonjs page', (done) ->
       phantom.create (ph) ->
-        options.ph = ph
-
-        tremble.process(options).then () ->
-          stats = fs.lstatSync options.commit
+        conf = options
+        conf.ph = ph
+        tremble.process(conf).then ->
+          stats = fs.lstatSync(commit)
           assert.equal stats.isDirectory(), true
+          conf.ph.exit()
           done()
+          return
+        return
+      return
+    return
 
-  describe 'worker.open', () ->
+  describe 'worker.open', ->
     it 'should render index.html', (done) ->
-      this.timeout 4000
+      @timeout 4000
+      phantom.create (ph) ->
+        conf = options
+        conf.ph = ph
+        conf.ph.createPage (page) ->
+          conf.page = page
+          tremble.open(conf).then((config) ->
+            config.page.evaluate (->
+              document.title
+            ), (result) ->
+              assert.equal result, 'Git Mirror Sync'
+              config.ph.exit()
+              done()
+              return
+            return
+          ).fail (err) ->
+            throw err
+            return
+          return
+        return
+      return
+    return
 
-      options.ph.createPage (page) ->
-        options.page = page
-
-        tremble.open(options).then (config) ->
-          config.page.evaluate () ->
-            return document.title
-          , (result) ->
-            assert.equal result, 'Git Mirror Sync'
-            config.ph.exit()
-            done()
-        .fail (err) ->
-          throw err
-
-  describe 'worker.setres', () ->
-    it 'set the resolution of the viewport to 1680x1050', (done) ->
-      pagePath = options.host + ':' + options.port + '/' + options.route
-      options.page.open pagePath, (status) ->
-        throw status if(status != 'success')
-
-        tremble.setRes(options).then (config) ->
-          done()
-        .fail (err) ->
-          throw err
-
+  describe 'worker.setres', ->
     it 'fail when setting the resolution of the viewport to dogxcat', (done) ->
-      pagePath = options.host + ':' + options.port + '/' + options.route
-      options.page.open pagePath, (status) ->
-        throw status if (status != 'success')
+      phantom.create (ph) ->
+        conf = options
+        conf.ph = ph
+        conf.ph.createPage (page) ->
+          conf.page = page
+          pagePath = conf.host + ':' + conf.port + '/' + conf.route
 
-        options.res =
-          width: 'dog'
-          height: 'cat'
+          conf.page.open pagePath, (status) ->
+            if status != 'success'
+              throw status
 
-        tremble.setRes(options).then (options) ->
-          throw new Error 'resolution should not be set to an invalid type'
-        .fail (err) ->
-          assert.equal err.height, 300
-          assert.equal err.width, 400
-          done()
+            conf.res =
+              width: 'dog'
+              height: 'cat'
 
-  describe 'worker.capture', () ->
-    it 'should render an image of the site that matches the sample image',
-    (done) ->
-      pagePath = options.host + ':' + options.port + '/' + options.route
-      options.page.open pagePath, (status) ->
-        throw status if(status != 'success')
+            tremble.setRes(conf).then((conf) ->
+              throw new Error('resolution should not be set to an invalid type')
+            ).fail (err) ->
+              assert.equal err.height, 300
+              assert.equal err.width, 400
+              done()
 
-        size =
-          width: options.res.width
-          height: options.res.height
+            return
+          return
+        return
+      return
 
-        options.page.set 'viewportSize', size, (status) ->
-          tremble.capture(options).then (config) ->
-            fs.readdir config.commit, (err, files) ->
-              throw err if (err)
+    it 'set the resolution of the viewport to 1680x1050', (done) ->
+      phantom.create (ph) ->
+        conf = options
+        conf.ph = ph
+        conf.ph.createPage (page) ->
+          conf.page = page
+          pagePath = conf.host + ':' + conf.port + '/' + conf.route
+          conf.page.open pagePath, (status) ->
+            if status != 'success'
+              throw status
 
-              if files.indexOf('index.1680-1050.png') > -1
-                newImg = config.commit + '/index.1680-1050.png'
-                sampleImg = 'tests/sample/index.1680-1050.png'
-                gm.compare newImg, sampleImg, (err, isEqual) ->
-                  throw err if (err)
+            conf.res =
+              width: 1680
+              height: 1050
 
-                  assert.equal isEqual, true
-                  done()
-              else
-                assert.fail files, 'index.1680-1050.png'
+            tremble.setRes(conf).then((conf) ->
+              done()
+            ).fail (err) ->
+              throw err
+
+            return
+          return
+        return
+      return
+    return
+  
+  describe 'worker.capture', ->
+    it 'should render an image of the site that matches the sample image', (done) ->
+      phantom.create (ph) ->
+        conf = options
+        conf.ph = ph
+
+        conf.ph.createPage (page) ->
+          conf.page = page
+          pagePath = conf.host + ':' + conf.port + '/' + conf.route
+          conf.page.open pagePath, (status) ->
+            if status != 'success'
+              throw status
+
+            size =
+              width: conf.res.width
+              height: conf.res.height
+
+            conf.page.set 'viewportSize', size, (status) ->
+              tremble.capture(conf).then (conf) ->
+                fs.readdir conf.commit, (err, files) ->
+                  if err
+                    throw err
+
+                  if files.indexOf('index.1680-1050.png') > -1
+                    newImg = conf.commit + '/index.1680-1050.png'
+                    sampleImg = 'tests/sample/index.1680-1050.png'
+                    gm.compare newImg, sampleImg, (err, isEqual) ->
+                      if err
+                        throw err
+
+                      assert.equal isEqual, true
+                      done()
+                  else
+                    assert.fail files, 'index.1680-1050.png'
+
+                  return
+                return
+              return
+            return
+          return
+        return
+      return
+    return
+  return
