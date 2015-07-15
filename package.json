@@ -1,10 +1,10 @@
 {
   "name": "tremble-js",
-  "version": "0.1.0",
+  "version": "0.2.4",
   "description": "Automatically builds your website, screenshots every page, and stores them in the cloud grouped by the commit. When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.",
-  "main": "tremble/web.js",
+  "main": "bin/web.js",
   "scripts": {
-    "test": "gulp lint"
+    "test": "mocha tests/"
   },
   "repository": {
     "type": "git",
@@ -19,18 +19,31 @@
   "dependencies": {
     "amqplib": "^0.3.2",
     "express": "^4.13.1",
+    "gm": "^1.18.1",
     "lodash": "^3.10.0",
     "mkdirp": "^0.5.1",
     "phantom": "^0.7.2",
     "q": "^1.4.1",
-    "uuid": "^2.0.1"
+    "uuid": "^2.0.1",
+    "winston": "^1.0.1"
   },
   "devDependencies": {
+    "coffeelint-stylish": "^0.1.2",
+    "coveralls": "^2.11.2",
+    "describe": "^1.2.0",
+    "expect": "^1.6.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
     "gulp-coffee": "^2.3.1",
+    "gulp-coffeelint": "^0.5.0",
     "gulp-jshint": "^1.11.2",
+    "gulp-mocha": "^2.1.3",
     "gulp-util": "^3.0.6",
-    "gulp-watch": "^4.2.4"
+    "gulp-watch": "^4.2.4",
+    "jshint-stylish": "^2.0.1",
+    "mocha": "^2.2.5",
+    "mocha-lcov-reporter": "0.0.2",
+    "should": "^7.0.2",
+    "superagent": "^1.2.0"
   }
 }

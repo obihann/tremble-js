@@ -1,4 +1,9 @@
 [![GitHub issues](https://img.shields.io/github/issues-raw/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/issues)
+[![GitHub tag](https://img.shields.io/github/tag/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js)
+[![GitHub release](https://img.shields.io/github/release/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/releases)
+[![Build Status](https://travis-ci.org/obihann/tremble-js.svg?branch=master)](https://travis-ci.org/obihann/tremble-js)
+[![Dependency Status](https://david-dm.org/obihann/tremble-js.svg)](https://david-dm.org/obihann/tremble-js)
+[![Coverage Status](https://coveralls.io/repos/obihann/tremble-js/badge.svg?branch=master&service=github)](https://coveralls.io/github/obihann/tremble-js?branch=master)
 [![GitHub license](https://img.shields.io/github/license/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/blob/master/LICENSE)
 
 # TrembleJS
