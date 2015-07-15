@@ -20,7 +20,8 @@ app =
 
   setRes: (config) ->
     deferred = Q.defer()
-    winston.log 'verbose', 'setting viewport to %sx%s', config.res.width, config.res.height
+    winston.log 'verbose', 'setting viewport to %sx%s',
+    config.res.width, config.res.height
 
     size =
       width: config.res.width
@@ -28,7 +29,8 @@ app =
 
     config.page.set 'viewportSize', size, (status) ->
       if status.height == size.height && status.width == status.width
-        winston.log 'verbose', 'viewport size now %sx%s', config.res.width, config.res.height
+        winston.log 'verbose', 'viewport size now %sx%s',
+        config.res.width, config.res.height
         deferred.resolve config
       else
         winston.error status
@@ -41,7 +43,8 @@ app =
     winston.log 'verbose', 'opening %s', config.route_name
 
     # todo: this should return status and be tested
-    config.page.open config.host + ':' + config.port + '/' + config.route, (status) ->
+    pagePath = config.host + ':' + config.port + '/' + config.route
+    config.page.open pagePath, (status) ->
       if status == 'success'
         setTimeout(() ->
           winston.log 'verbose', '%s, now open %s', config.route, status

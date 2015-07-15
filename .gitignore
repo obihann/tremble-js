@@ -2,6 +2,9 @@
 .lvimrc
 .DS_Store
 
+tests/*.js
+bin/*.js
+
 # Logs
 logs
 *.log
