@@ -1,5 +1,6 @@
 winston = require('winston')
 Q = require('q')
+amqp = require('amqplib')
 mkdirp = require('mkdirp')
 _ = require('lodash')
 
