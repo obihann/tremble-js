@@ -180,7 +180,7 @@ describe 'TrembleJS', ->
 
     it 'rendered images should match the sample image', (done) ->
       newImg = options.commit + '/index.1680-1050.png'
-      sampleImg = 'tests/sample/index.1680-1050.png'
+      sampleImg = 'sample-capture/index.1680-1050.png'
 
       gm.compare newImg, sampleImg, (err, isEqual) ->
         if err
