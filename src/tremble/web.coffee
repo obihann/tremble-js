@@ -4,29 +4,46 @@ Q = require 'q'
 phantom = require 'phantom'
 uuid = require 'uuid'
 express = require 'express'
-app = module.exports = express()
+app = express()
 tremble = require './worker'
 config = require './tremble'
 amqp = require 'amqplib'
 
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
+console.log port
+rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
 q = "tremble.queue"
 app.use express.static 'site'
-rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
 
-loadApp = (conn) ->
-  conn.createChannel().then (ch) ->
-    app.post '/hook', (req, res) ->
-      ch.assertQueue q
-      ch.sendToQueue "gms.queue", new Buffer("test")
-      res.sendStatus  201
+trembleWeb =
+  app: app
 
-    app.listen port, ->
-      winston.log 'info', 'TrembleJS listening at %s', port
+  startup: ->
+    return amqp.connect rabbitMQ
+    .then trembleWeb.createChannel
+    .then (ch) ->
+      trembleWeb.ch = ch
+    .catch (err) ->
+      trembleWeb.setupError err
 
-setupError = (err) ->
-  winston.error err
-  process.exit 1
+  createChannel: (conn) ->
+    winston.log "verbose", "creating channel"
+    return conn.createChannel()
 
-amqp.connect(rabbitMQ).then loadApp, setupError
+  setupError: (err) ->
+    winston.error err
+    process.exit 1
+
+app.post '/hook', (req, res) ->
+  trembleWeb.ch.assertQueue q
+  trembleWeb.ch.sendToQueue "gms.queue", new Buffer("test")
+  res.sendStatus  201
+
+trembleWeb.startup().catch (err) ->
+  trembleWeb.setupError err
+
+app.listen port, ->
+  winston.log 'info', 'TrembleJS listening at %s', port
+
+module.exports = trembleWeb
