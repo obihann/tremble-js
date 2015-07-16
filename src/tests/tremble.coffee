@@ -34,6 +34,26 @@ after ->
   fs.rmdir commit
   return
 
+# route tests
+describe 'Routes', () ->
+  describe 'GET /', () ->
+    it 'check default route', (done) ->
+      request
+      .get(url + '/')
+      .end (err, res) ->
+        assert.equal res.status, 200
+        done()
+  
+  describe 'POST /hook', () ->
+    this.timeout 10000
+
+    it 'check default route', (done) ->
+      request
+      .post url + '/hook'
+      .end (err, res) ->
+        assert.equal res.status, 201
+        done()
+
 # unit tests
 describe 'TrembleJS', ->
   describe 'worker.process', ->
