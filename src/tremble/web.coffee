@@ -16,8 +16,6 @@ app.use express.static('site')
 
 amqp.connect(process.env.RABBITMQ_BIGWIG_URL).then (conn) ->
   conn.createChannel().then (ch) ->
-    app.get '/tremble', (req, res) ->
-
     app.post '/hook', (req, res) ->
       ch.assertQueue q
       ch.sendToQueue "gms.queue", new Buffer("test")

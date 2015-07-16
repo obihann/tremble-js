@@ -30,5 +30,5 @@ describe 'Routes', () ->
       request
       .post url + '/hook'
       .end (err, res) ->
-        assert.equal res.status, 200
+        assert.equal res.status, 201
         done()
