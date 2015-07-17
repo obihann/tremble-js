@@ -1,12 +1,8 @@
 winston = require 'winston'
 _ = require 'lodash'
 Q = require 'q'
-phantom = require 'phantom'
-uuid = require 'uuid'
 express = require 'express'
 app = express()
-tremble = require './worker'
-config = require './tremble'
 amqp = require 'amqplib'
 
 winston.level = process.env.WINSTON_LEVEL
@@ -20,15 +16,19 @@ trembleWeb =
   app: app
 
   startup: ->
+    winston.log 'info', 'connecting ot rabbitMQ'
     return amqp.connect rabbitMQ
     .then trembleWeb.createChannel
     .then (ch) ->
+      ok = ch.assertQueue q,
+        durable: true
+
       trembleWeb.ch = ch
     .catch (err) ->
       trembleWeb.setupError err
 
   createChannel: (conn) ->
-    winston.log "verbose", "creating channel"
+    winston.log "info", "creating channel"
     return conn.createChannel()
 
   setupError: (err) ->
@@ -36,8 +36,9 @@ trembleWeb =
     process.exit 1
 
 app.post '/hook', (req, res) ->
+  winston.log 'info', 'POST /hook'
   trembleWeb.ch.assertQueue q
-  trembleWeb.ch.sendToQueue "gms.queue", new Buffer("test")
+  trembleWeb.ch.sendToQueue "tremble.queue", new Buffer("test")
   res.sendStatus  201
 
 trembleWeb.startup().catch (err) ->
