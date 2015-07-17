@@ -15,8 +15,6 @@ passport = require './passport'
 # setup variables
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
-rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
-q = "tremble.queue"
 app = express()
 
 # setup the enviroment
@@ -37,13 +35,15 @@ app.use passport.session()
 # define this module
 trembleWeb =
   app: app
+  q: 'tremble.queue'
+  rabbitMQ: process.env.RABBITMQ_BIGWIG_URL
 
   startup: ->
     winston.log 'info', 'connecting ot rabbitMQ'
-    return amqp.connect rabbitMQ
+    return amqp.connect trembleWeb.rabbitMQ
     .then trembleWeb.createChannel
     .then (ch) ->
-      ok = ch.assertQueue q,
+      ok = ch.assertQueue trembleWeb.q,
         durable: true
 
       trembleWeb.ch = ch
