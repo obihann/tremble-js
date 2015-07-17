@@ -1,10 +1,10 @@
 {
   "name": "tremble-js",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "description": "Automatically builds your website, screenshots every page, and stores them in the cloud grouped by the commit. When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.",
-  "main": "tremble/web.js",
+  "main": "bin/web.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "mocha tests/"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   "dependencies": {
     "body-parser": "^1.13.2",
     "connect-mongo": "^0.8.1",
+    "amqplib": "^0.3.2",
     "express": "^4.13.1",
     "express-session": "^1.11.3",
     "gm": "^1.18.1",
@@ -35,19 +36,26 @@
     "winston": "^1.0.1"
   },
   "devDependencies": {
-    "codacy-coverage": "^1.1.2",
+    "chai": "^3.1.0",
+    "chai-as-promised": "^5.1.0",
+    "coffeelint-stylish": "^0.1.2",
     "coveralls": "^2.11.2",
     "describe": "^1.2.0",
+    "expect": "^1.6.0",
     "gulp": "^3.9.0",
     "gulp-batch": "^1.0.5",
     "gulp-coffee": "^2.3.1",
+    "gulp-coffeelint": "^0.5.0",
     "gulp-jshint": "^1.11.2",
     "gulp-mocha": "^2.1.3",
     "gulp-util": "^3.0.6",
     "gulp-watch": "^4.2.4",
+    "jshint-stylish": "^2.0.1",
     "mocha": "^2.2.5",
     "mocha-lcov-reporter": "0.0.2",
     "should": "^7.0.2",
-    "superagent": "^1.2.0"
+    "superagent": "^1.2.0",
+    "supertest": "^1.0.1",
+    "supertest-as-promised": "^2.0.2"
   }
 }
