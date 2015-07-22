@@ -1,5 +1,7 @@
 winston = require 'winston'
 
+winston.level = process.env.WINSTON_LEVEL
+
 module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
 
