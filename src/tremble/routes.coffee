@@ -12,10 +12,10 @@ module.exports = (trembleWeb, passport) ->
     res.redirect '/'
 
   app.get '/auth/github',
-  passport.authenticate('github')
+  passport.authenticate('github', {scope: [ 'user:email' ]})
 
   app.get '/auth/github/callback',
-  passport.authenticate('github'),
+  passport.authenticate('github', {scope: [ 'user:email' ]}),
   (req, res) ->
     winston.log 'info', 'GET /auth/github/callback'
     res.redirect '/'
