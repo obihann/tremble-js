@@ -1,20 +1,20 @@
-[![GitHub issues](https://img.shields.io/github/issues-raw/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/issues)
-[![GitHub tag](https://img.shields.io/github/tag/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js)
-[![GitHub release](https://img.shields.io/github/release/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/releases)
-[![Build Status](https://travis-ci.org/obihann/tremble-js.svg?branch=master)](https://travis-ci.org/obihann/tremble-js)
-[![Dependency Status](https://david-dm.org/obihann/tremble-js.svg)](https://david-dm.org/obihann/tremble-js)
-[![Coverage Status](https://coveralls.io/repos/obihann/tremble-js/badge.svg?branch=master&service=github)](https://coveralls.io/github/obihann/tremble-js?branch=master)
-[![GitHub license](https://img.shields.io/github/license/obihann/tremble-js.svg)](https://github.com/obihann/tremble-js/blob/master/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues-raw/tremble-js/tremble-js.svg)](https://github.com/tremble-js/tremble-js/issues)
+[![GitHub tag](https://img.shields.io/github/tag/tremble-js/tremble-js.svg)](https://github.com/tremble-js/tremble-js)
+[![GitHub release](https://img.shields.io/github/release/tremble-js/tremble-js.svg)](https://github.com/tremble-js/tremble-js/releases)
+[![Build Status](https://travis-ci.org/tremble-js/tremble-js.svg?branch=master)](https://travis-ci.org/tremble-js/tremble-js)
+[![Dependency Status](https://david-dm.org/tremble-js/tremble-js.svg)](https://david-dm.org/tremble-js/tremble-js)
+[![Coverage Status](https://coveralls.io/repos/tremble-js/tremble-js/badge.svg?branch=master&service=github)](https://coveralls.io/github/tremble-js/tremble-js?branch=master)
+[![GitHub license](https://img.shields.io/github/license/tremble-js/tremble-js.svg)](https://github.com/tremble-js/tremble-js/blob/master/LICENSE)
 
 # TrembleJS
-[![Logo](https://raw.githubusercontent.com/obihann/tremble-js/master/logo.png)]()
+[![Logo](https://raw.githubusercontent.com/tremble-js/tremble-js/master/logo.png)]()
 
 Automatically builds your website,  screenshots every page, and stores them in the cloud grouped by the commit. 
 
 When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.
 
 ##Table of Contents
-* [Issues](https://github.com/obihann/tremble-js/issues)
+* [Issues](https://github.com/tremble-js/tremble-js/issues)
 * [Attributes](#attributes)
 * [License](#license)
 
