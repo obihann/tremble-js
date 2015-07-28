@@ -38,6 +38,8 @@ beforeEach (done) ->
   done()
 
 before (done) ->
+  options.pagePath = options.host + ':' + options.port + '/tremble/'
+
   phantom.create (ph) ->
     options.ph = ph
     done()
@@ -100,7 +102,7 @@ describe 'TrembleJS', ->
 
   describe 'worker.setres', ->
     it 'fail when setting the resolution of the viewport to dogxcat', (done) ->
-      options.pagePath = options.host + ':' + options.port + '/' + options.route
+      options.pagePath += options.route
 
       options.page.open options.pagePath, (status) ->
         done status if status != 'success'
@@ -153,8 +155,13 @@ describe 'TrembleJS', ->
       newImg = options.commit + '/index.1680-1050.png'
       sampleImg = 'sample-capture/index.1680-1050.png'
 
-      gm.compare newImg, sampleImg, (err, isEqual) ->
+      options =
+        tolerance: 0.1
+
+      gm.compare newImg, sampleImg, options, (err, isEqual, equality) ->
         done err if err
+
+        console.log "image equality %s", equality
 
         assert.equal isEqual, true
         done()

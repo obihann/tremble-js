@@ -54,7 +54,7 @@ app =
     winston.log 'verbose', 'opening %s', config.route_name
 
     # todo: this should return status and be tested
-    pagePath = config.host + ':' + config.port + '/' + config.route
+    pagePath = config.host + ':' + config.port + '/tremble/' + config.route
     config.page.open pagePath, (status) ->
       if status == 'success'
         setTimeout(() ->
