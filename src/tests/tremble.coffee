@@ -5,7 +5,6 @@ gm = require 'gm'
 phantom = require 'phantom'
 uuid = require 'uuid'
 chai = require "chai"
-#expect = require('chai').expect
 assert = require('chai').assert
 chaiAsPromised = require 'chai-as-promised'
 request = require 'supertest-as-promised'
@@ -45,28 +44,11 @@ before (done) ->
     done()
 
 after (done) ->
-  options.ph.exit()
+  options.page.close() if typeof options.page != 'undefined'
+  options.ph.exit() if typeof options.ph != 'undefined'
   fs.unlinkSync commit + '/index.1680-1050.png'
   fs.rmdir commit
   done()
-
-# route tests
-describe 'Routes', ->
-  describe 'GET /', ->
-    it 'check default route', (done) ->
-      request trembleWeb
-        .get '/'
-        .expect 200
-        .then (res) ->
-          done()
-  
-  describe 'POST /hook', () ->
-    it 'checks post route', (done) ->
-      request trembleWeb
-        .post '/hook'
-        .expect 201
-        .then (res) ->
-          done()
 
 # unit tests
 describe 'TrembleJS', ->

@@ -40,7 +40,7 @@ trembleWeb =
   rabbitMQ: process.env.RABBITMQ_BIGWIG_URL
 
   startup: ->
-    winston.log 'info', 'connecting ot rabbitMQ'
+    winston.log 'info', 'connecting to rabbitMQ'
     return amqp.connect trembleWeb.rabbitMQ
     .then trembleWeb.createChannel
     .then (ch) ->
