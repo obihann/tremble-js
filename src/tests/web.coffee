@@ -1,7 +1,6 @@
 # load npm modules
 Q = require 'q'
 amqp = require('amqplib')
-phantom = require 'phantom'
 request = require 'supertest-as-promised'
 
 rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
@@ -9,7 +8,6 @@ q = process.env.RABBITMQ_QUEUE
 
 # load local modules
 trembleWeb = require('../bin/web.js').app
-tremble = require '../bin/worker'
 
 after (done) ->
   amqp.connect rabbitMQ
