@@ -14,7 +14,7 @@ nav.navbar-inverse.navbar-fixed-top
     .row
       h2 Keep all your GitHub repos mirrored safely on BitBucket
     .row
-      .col-xs-12
+      .col-xs-12.col-md-6
         .panel.panel-primary
           .panel-heading
             h3 Step 1:
@@ -22,4 +22,25 @@ nav.navbar-inverse.navbar-fixed-top
             p Sign in with GitHub
             a(href="/auth/github")
               i.fa.fa-github.fa-4x(title="Sign in with GitHub")
+      .col-xs-12.col-md-6
+        .panel.panel-default.disabled
+          .panel-heading
+            h3 Step 2:
+          .panel-body
+            p Sign in with Dropbox 
+            a
+              i.fa.fa-dropbox.fa-4x(title="Sign in with Dropbox")
+     .row
+        .col.col-xs-12
+          .panel.panel-default.disabled
+            .panel-heading
+              h3 Step 3:
+            .panel-body
+              p Add the webhook to your GitHub repos:
+              pre https://localhost:8181/
+              p.bg-warning
+                small
+                  i IMPORTANT:
+                  br
+                  i If your repo is part of a GitHub organization you will have to first create a BitBucket team with a matching name.
 include footer.jade

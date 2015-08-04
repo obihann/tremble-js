@@ -11,45 +11,64 @@ passport.serializeUser (user, done) ->
 passport.deserializeUser (user, done) ->
   done null, user
 
-passport.use new GitHubStrategy({
-  clientID: process.env.GH_ID
-  clientSecret: process.env.GH_SECRET
-  callbackURL: process.env.GH_CALLBACK
-}, (accessToken, refreshToken, profile, done) ->
-  console.log accessToken
-  console.log profile
-  console.log refreshToken
+passportObject =
+  passport: passport
+  strategies:
+    github: (req, res, next) ->
+      passport.use new GitHubStrategy({
+        clientID: process.env.GH_ID
+        clientSecret: process.env.GH_SECRET
+        callbackURL: process.env.GH_CALLBACK
+      }, (accessToken, refreshToken, profile, done) ->
+        models.user.findOne { githubId: profile.id }, (err, user) ->
+          if err
+            winston.log 'error', err
+            return done(err)
+          if !user
+            user = new (models.user)(
+              githubId: profile.id
+              displayName: profile.displayName
+              username: profile.username
+              accessToken: accessToken
+              createdAt: Date.now())
+            user.save (err) ->
+              if err
+                done err
+              else
+                done null, user
+          else
+            return done(null, user)
+          return
+        return
+      )
 
-  models.user.findOne { githubId: profile.id }, (err, user) ->
-    if err
-      winston.log 'error', err
-      return done(err)
-    if !user
-      user = new (models.user)(
-        githubId: profile.id
-        displayName: profile.displayName
-        username: profile.username
-        accessToken: accessToken
-        createdAt: Date.now())
-      user.save (err) ->
-        if err
-          done err
-        else
-          done null, user
-    else
-      return done(null, user)
-    return
-  return
-)
+      next()
+    dropbox: (req, res, next) ->
+      passport.use new DropboxOAuth2Strategy({
+        clientID: process.env.DROPBOX_KEY
+        clientSecret: process.env.DROPBOX_SECRET
+        callbackURL: process.env.DROPBOX_CALLBACK
+      }, (accessToken, refreshToken, profile, done) ->
+        dropbox =
+          accessToken: accessToken
+          createdAt: Date.now()
 
-passport.use new DropboxOAuth2Strategy({
-  clientID: process.env.DROPBOX_KEY
-  clientSecret: process.env.DROPBOX_SECRET
-  callbackURL: process.env.DROPBOX_CALLBACK
-}, (accessToken, refreshToken, profile, done) ->
-  User.findOrCreate { providerId: profile.id }, (err, user) ->
-    done err, user
-  return
-)
+        models.user.update { _id: req.user._id }, {'dropbox': dropbox}, (err) ->
+          if err
+            winston.error err
+            done err, null
 
-module.exports = passport
+          models.user.findOne { _id: req.user._id }, (err, user) ->
+            if err
+              winston.error err
+              done err, null
+            else
+              console.log user
+              done null, user
+
+        return
+      )
+
+      next()
+
+module.exports = passportObject

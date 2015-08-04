@@ -30,8 +30,8 @@ app.use session(
   secret: 'keyboard cat'
   resave: true
   saveUninitialized: false)
-app.use passport.initialize()
-app.use passport.session()
+app.use passport.passport.initialize()
+app.use passport.passport.session()
 
 # define this module
 trembleWeb =

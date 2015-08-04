@@ -1,12 +1,25 @@
 # Change Log
 
-## [Unreleased](https://github.com/tremble-js/tremble-js/tree/HEAD)
+## [v0.2.8](https://github.com/tremble-js/tremble-js/tree/v0.2.8) (2015-08-04)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.7...v0.2.8)
 
-[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.7...HEAD)
+**Implemented enhancements:**
+
+- stop storing commit folders in root [\#37](https://github.com/tremble-js/tremble-js/issues/37)
+
+**Fixed bugs:**
+
+- phantom js is not being properly closed [\#40](https://github.com/tremble-js/tremble-js/issues/40)
 
 **Closed issues:**
 
 - add index page [\#34](https://github.com/tremble-js/tremble-js/issues/34)
+
+**Merged pull requests:**
+
+- Develop [\#42](https://github.com/tremble-js/tremble-js/pull/42) ([obihann](https://github.com/obihann))
+- removing worker from web test [\#41](https://github.com/tremble-js/tremble-js/pull/41) ([obihann](https://github.com/obihann))
+- New images folder [\#38](https://github.com/tremble-js/tremble-js/pull/38) ([obihann](https://github.com/obihann))
 
 ## [v0.2.7](https://github.com/tremble-js/tremble-js/tree/v0.2.7) (2015-08-04)
 [Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.6...v0.2.7)
