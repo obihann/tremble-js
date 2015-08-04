@@ -35,5 +35,5 @@ module.exports = (trembleWeb, passport) ->
   (req, res) ->
     winston.log 'info', 'POST /hook'
     trembleWeb.ch.assertQueue trembleWeb.q
-    trembleWeb.ch.sendToQueue "tremble.queue", new Buffer("test")
+    trembleWeb.ch.sendToQueue trembleWeb.q, new Buffer("test")
     res.sendStatus  201
