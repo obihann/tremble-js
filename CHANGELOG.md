@@ -1,7 +1,18 @@
 # Change Log
 
+## [Unreleased](https://github.com/tremble-js/tremble-js/tree/HEAD)
+
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.8...HEAD)
+
+**Merged pull requests:**
+
+- Dropbox [\#43](https://github.com/tremble-js/tremble-js/pull/43) ([obihann](https://github.com/obihann))
+
 ## [v0.2.8](https://github.com/tremble-js/tremble-js/tree/v0.2.8) (2015-08-04)
-[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.7...v0.2.8)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.8-beta...v0.2.8)
+
+## [v0.2.8-beta](https://github.com/tremble-js/tremble-js/tree/v0.2.8-beta) (2015-08-04)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.7...v0.2.8-beta)
 
 **Implemented enhancements:**
 
