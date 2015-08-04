@@ -36,7 +36,7 @@ app.use passport.session()
 # define this module
 trembleWeb =
   app: app
-  q: 'tremble.queue'
+  q: process.env.RABBITMQ_QUEUE
   rabbitMQ: process.env.RABBITMQ_BIGWIG_URL
 
   startup: ->

@@ -1,12 +1,26 @@
 # load npm modules
 Q = require 'q'
+amqp = require('amqplib')
 phantom = require 'phantom'
-chai = require "chai"
 request = require 'supertest-as-promised'
+
+rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
+q = process.env.RABBITMQ_QUEUE
 
 # load local modules
 trembleWeb = require('../bin/web.js').app
 tremble = require '../bin/worker'
+
+after (done) ->
+  amqp.connect rabbitMQ
+  .then (conn) ->
+    conn.createChannel()
+  .then (ch) ->
+    ch.deleteQueue q
+  .then () ->
+    done()
+  .catch (err) ->
+    done err
 
 # route tests
 describe 'Routes', ->

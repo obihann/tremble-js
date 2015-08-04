@@ -1,6 +1,7 @@
 # load npm modules
 Q = require 'q'
 fs = require 'fs'
+mkdirp = require 'mkdirp'
 gm = require 'gm'
 phantom = require 'phantom'
 uuid = require 'uuid'
@@ -37,17 +38,34 @@ beforeEach (done) ->
   done()
 
 before (done) ->
-  options.pagePath = options.host + ':' + options.port + '/tremble/'
+  mkSSDir = (done) ->
+    mkdirp 'screenshot', (err) ->
+      if err == null
+        done err
 
-  phantom.create (ph) ->
-    options.ph = ph
-    done()
+  setupPage = () ->
+    options.pagePath = options.host + ':' + options.port + '/tremble/'
+
+    phantom.create (ph) ->
+      options.ph = ph
+      done()
+
+  try
+    ssDir = fs.lstatSync 'screenshot'
+
+    if ssDir.isDirectory()
+      setupPage()
+    else
+      mkSSDir setupPage
+  catch e
+    mkSSDir setupPage
+
 
 after (done) ->
   options.page.close() if typeof options.page != 'undefined'
   options.ph.exit() if typeof options.ph != 'undefined'
-  fs.unlinkSync commit + '/index.1680-1050.png'
-  fs.rmdir commit
+  fs.unlinkSync 'screenshot/' + commit + '/index.1680-1050.png'
+  fs.rmdir 'screenshot/' + commit
   done()
 
 # unit tests
@@ -56,7 +74,7 @@ describe 'TrembleJS', ->
     it 'should make a new directory and create a new phantonjs page', (done) ->
       tremble.process(options)
         .then (config) ->
-          stats = fs.lstatSync commit
+          stats = fs.lstatSync 'screenshot/' + commit
           assert.equal stats.isDirectory(), true, 'directory exists'
           assert.isDefined stats, 'directory stats are defined'
         .then ->
@@ -120,7 +138,7 @@ describe 'TrembleJS', ->
           .then (conf) ->
             deferred = Q.defer()
 
-            fs.readdir conf.commit, (err, files) ->
+            fs.readdir 'screenshot/' + conf.commit, (err, files) ->
               deferred.reject err if err
               deferred.resolve files
 
@@ -134,7 +152,7 @@ describe 'TrembleJS', ->
             done err
 
     it 'rendered images should match the sample image', (done) ->
-      newImg = options.commit + '/index.1680-1050.png'
+      newImg = 'screenshot/' + options.commit + '/index.1680-1050.png'
       sampleImg = 'sample-capture/index.1680-1050.png'
 
       options =
