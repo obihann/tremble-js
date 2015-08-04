@@ -5,6 +5,9 @@ winston.level = process.env.WINSTON_LEVEL
 module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
 
+  app.get '/', (req, res) ->
+    res.render 'index'
+
   app.get '/logout',
   (req, res) ->
     winston.log 'info', 'GET /logout'
@@ -18,7 +21,7 @@ module.exports = (trembleWeb, passport) ->
   passport.authenticate('github', {scope: [ 'user:email' ]}),
   (req, res) ->
     winston.log 'info', 'GET /auth/github/callback'
-    res.redirect '/'
+    res.render 'profile'
 
   #app.get '/auth/dropbox', passport.authenticate('dropbox-oauth2')
 

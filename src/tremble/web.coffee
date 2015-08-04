@@ -18,7 +18,8 @@ port = process.env.PORT or 3002
 app = express()
 
 # setup the enviroment
-app.use express.static 'site'
+app.set 'view engine', 'jade'
+app.use express.static 'public'
 app.use bodyParser.json()
 mongoose.connect process.env.MONGO_DB
 app.use session(
@@ -39,7 +40,7 @@ trembleWeb =
   rabbitMQ: process.env.RABBITMQ_BIGWIG_URL
 
   startup: ->
-    winston.log 'info', 'connecting ot rabbitMQ'
+    winston.log 'info', 'connecting to rabbitMQ'
     return amqp.connect trembleWeb.rabbitMQ
     .then trembleWeb.createChannel
     .then (ch) ->
