@@ -10,14 +10,14 @@ config = require './tremble'
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
 rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
-q = "tremble.queue"
+q = process.env.RABBITMQ_QUEUE
 
 app =
   capture: (config) ->
     winston.log 'info', 'app.capture'
     deferred = Q.defer()
 
-    filename = config.commit + '/' + config.route_name + '.'
+    filename = 'screenshot/' + config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
     winston.log 'verbose', 'rendering %s', filename
 
@@ -72,7 +72,7 @@ app =
     winston.log 'info', 'app.process'
     deferred = Q.defer()
 
-    mkdirp config.commit, (err) ->
+    mkdirp 'screenshot/' + config.commit, (err) ->
       if err == null
         winston.log 'verbose', 'mkdir %s', config.commit
 
@@ -87,6 +87,19 @@ app =
 
 doWork = ->
   winston.log 'info', 'doWork'
+
+  mkSSDir = () ->
+    mkdirp 'screenshot', (err) ->
+      if err == null
+        winston.log 'verbose', 'mkdir screenshot'
+
+  try
+    ssDir = fs.lstatSync 'screenshot'
+
+    if ssDir.isDirectory() != true
+      mkSSDir()
+  catch e
+    mkSSDir()
 
   phantom.create (ph) ->
     winston.log 'info', 'Starting phantom'
@@ -126,7 +139,7 @@ setupWorker = (ch) ->
     ch.prefetch 1
 
   ok = ok.then ->
-    ch.consume 'tremble.queue', doWork, noAck: false
+    ch.consume q, doWork, noAck: false
 
   ok
 

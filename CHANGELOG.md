@@ -1,68 +1,96 @@
 # Change Log
 
-## [v0.2.5](https://github.com/obihann/tremble-js/tree/v0.2.5) (2015-07-17)
-[Full Changelog](https://github.com/obihann/tremble-js/compare/v0.2.4...v0.2.5)
+## [Unreleased](https://github.com/tremble-js/tremble-js/tree/HEAD)
 
-**Merged pull requests:**
-
-- merging 0.2.5 develop into master [\#32](https://github.com/obihann/tremble-js/pull/32) ([obihann](https://github.com/obihann))
-- adding rabbitmq [\#31](https://github.com/obihann/tremble-js/pull/31) ([obihann](https://github.com/obihann))
-
-## [v0.2.4](https://github.com/obihann/tremble-js/tree/v0.2.4) (2015-07-15)
-[Full Changelog](https://github.com/obihann/tremble-js/compare/v0.2.3...v0.2.4)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.7...HEAD)
 
 **Closed issues:**
 
-- add mocha testing [\#11](https://github.com/obihann/tremble-js/issues/11)
+- add index page [\#34](https://github.com/tremble-js/tremble-js/issues/34)
+
+## [v0.2.7](https://github.com/tremble-js/tremble-js/tree/v0.2.7) (2015-08-04)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.6...v0.2.7)
 
 **Merged pull requests:**
 
-- updating version [\#29](https://github.com/obihann/tremble-js/pull/29) ([obihann](https://github.com/obihann))
-- rewriting all tests to coffeescript and adding some restructuring [\#28](https://github.com/obihann/tremble-js/pull/28) ([obihann](https://github.com/obihann))
-- more testing [\#27](https://github.com/obihann/tremble-js/pull/27) ([obihann](https://github.com/obihann))
-- now at over 90% code coverage [\#26](https://github.com/obihann/tremble-js/pull/26) ([obihann](https://github.com/obihann))
+- adding homepage [\#36](https://github.com/tremble-js/tremble-js/pull/36) ([obihann](https://github.com/obihann))
 
-## [v0.2.3](https://github.com/obihann/tremble-js/tree/v0.2.3) (2015-07-13)
-[Full Changelog](https://github.com/obihann/tremble-js/compare/v0.2.1...v0.2.3)
-
-**Merged pull requests:**
-
-- more testing [\#25](https://github.com/obihann/tremble-js/pull/25) ([obihann](https://github.com/obihann))
-
-## [v0.2.1](https://github.com/obihann/tremble-js/tree/v0.2.1) (2015-07-13)
-[Full Changelog](https://github.com/obihann/tremble-js/compare/v0.2.0...v0.2.1)
+## [v0.2.6](https://github.com/tremble-js/tremble-js/tree/v0.2.6) (2015-07-28)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.5...v0.2.6)
 
 **Closed issues:**
 
-- render pages defined in config [\#12](https://github.com/obihann/tremble-js/issues/12)
+- add github oauth [\#21](https://github.com/tremble-js/tremble-js/issues/21)
+- add rabbitmq [\#10](https://github.com/tremble-js/tremble-js/issues/10)
 
 **Merged pull requests:**
 
-- Testing [\#23](https://github.com/obihann/tremble-js/pull/23) ([obihann](https://github.com/obihann))
+- adding passport and github oauth [\#35](https://github.com/tremble-js/tremble-js/pull/35) ([obihann](https://github.com/obihann))
+- adding github auth [\#33](https://github.com/tremble-js/tremble-js/pull/33) ([obihann](https://github.com/obihann))
 
-## [v0.2.0](https://github.com/obihann/tremble-js/tree/v0.2.0) (2015-07-13)
-[Full Changelog](https://github.com/obihann/tremble-js/compare/v0.1.0...v0.2.0)
+## [v0.2.5](https://github.com/tremble-js/tremble-js/tree/v0.2.5) (2015-07-17)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.4...v0.2.5)
+
+**Merged pull requests:**
+
+- merging 0.2.5 develop into master [\#32](https://github.com/tremble-js/tremble-js/pull/32) ([obihann](https://github.com/obihann))
+- adding rabbitmq [\#31](https://github.com/tremble-js/tremble-js/pull/31) ([obihann](https://github.com/obihann))
+
+## [v0.2.4](https://github.com/tremble-js/tremble-js/tree/v0.2.4) (2015-07-15)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.3...v0.2.4)
+
+**Closed issues:**
+
+- add mocha testing [\#11](https://github.com/tremble-js/tremble-js/issues/11)
+
+**Merged pull requests:**
+
+- updating version [\#29](https://github.com/tremble-js/tremble-js/pull/29) ([obihann](https://github.com/obihann))
+- rewriting all tests to coffeescript and adding some restructuring [\#28](https://github.com/tremble-js/tremble-js/pull/28) ([obihann](https://github.com/obihann))
+- more testing [\#27](https://github.com/tremble-js/tremble-js/pull/27) ([obihann](https://github.com/obihann))
+- now at over 90% code coverage [\#26](https://github.com/tremble-js/tremble-js/pull/26) ([obihann](https://github.com/obihann))
+
+## [v0.2.3](https://github.com/tremble-js/tremble-js/tree/v0.2.3) (2015-07-13)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.1...v0.2.3)
+
+**Merged pull requests:**
+
+- more testing [\#25](https://github.com/tremble-js/tremble-js/pull/25) ([obihann](https://github.com/obihann))
+
+## [v0.2.1](https://github.com/tremble-js/tremble-js/tree/v0.2.1) (2015-07-13)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.0...v0.2.1)
+
+**Closed issues:**
+
+- render pages defined in config [\#12](https://github.com/tremble-js/tremble-js/issues/12)
+
+**Merged pull requests:**
+
+- Testing [\#23](https://github.com/tremble-js/tremble-js/pull/23) ([obihann](https://github.com/obihann))
+
+## [v0.2.0](https://github.com/tremble-js/tremble-js/tree/v0.2.0) (2015-07-13)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.1.0...v0.2.0)
 
 **Implemented enhancements:**
 
-- take capture delay from config [\#13](https://github.com/obihann/tremble-js/issues/13)
+- take capture delay from config [\#13](https://github.com/tremble-js/tremble-js/issues/13)
 
 **Merged pull requests:**
 
-- Develop [\#20](https://github.com/obihann/tremble-js/pull/20) ([obihann](https://github.com/obihann))
-- adding support for mutiple pages [\#19](https://github.com/obihann/tremble-js/pull/19) ([obihann](https://github.com/obihann))
-- Timeout [\#18](https://github.com/obihann/tremble-js/pull/18) ([obihann](https://github.com/obihann))
-- adding a post route to support webhooks [\#17](https://github.com/obihann/tremble-js/pull/17) ([obihann](https://github.com/obihann))
-- Develop [\#9](https://github.com/obihann/tremble-js/pull/9) ([obihann](https://github.com/obihann))
+- Develop [\#20](https://github.com/tremble-js/tremble-js/pull/20) ([obihann](https://github.com/obihann))
+- adding support for mutiple pages [\#19](https://github.com/tremble-js/tremble-js/pull/19) ([obihann](https://github.com/obihann))
+- Timeout [\#18](https://github.com/tremble-js/tremble-js/pull/18) ([obihann](https://github.com/obihann))
+- adding a post route to support webhooks [\#17](https://github.com/tremble-js/tremble-js/pull/17) ([obihann](https://github.com/obihann))
+- Develop [\#9](https://github.com/tremble-js/tremble-js/pull/9) ([obihann](https://github.com/obihann))
 
-## [v0.1.0](https://github.com/obihann/tremble-js/tree/v0.1.0) (2015-07-13)
+## [v0.1.0](https://github.com/tremble-js/tremble-js/tree/v0.1.0) (2015-07-13)
 **Closed issues:**
 
-- Use PhatomJS [\#2](https://github.com/obihann/tremble-js/issues/2)
+- Use PhatomJS [\#2](https://github.com/tremble-js/tremble-js/issues/2)
 
 **Merged pull requests:**
 
-- adding promises [\#6](https://github.com/obihann/tremble-js/pull/6) ([obihann](https://github.com/obihann))
+- adding promises [\#6](https://github.com/tremble-js/tremble-js/pull/6) ([obihann](https://github.com/obihann))
 
 
 
