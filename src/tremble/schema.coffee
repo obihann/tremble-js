@@ -6,8 +6,11 @@ UserSchema = new Schema
   displayName: String
   username: String
   accessToken: String
-  refreshToken: String
   createdAt: Number
+  dropbox:
+    id: String
+    accessToken: String
+    createdAt: Number
 
 Users = mongoose.model('Users', UserSchema)
 

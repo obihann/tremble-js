@@ -6,7 +6,19 @@ module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
 
   app.get '/', (req, res) ->
-    res.render 'index'
+    if typeof req.user == 'undefined'
+      res.render 'index'
+    else
+      res.render 'profile'
+
+  app.get '/profile', (req, res) ->
+    if typeof req.user == 'undefined'
+      res.redirect '/'
+    else
+      if typeof req.user.dropbox == 'undefined'
+        res.render 'dropbox'
+      else
+        res.render 'profile'
 
   app.get '/logout',
   (req, res) ->
@@ -15,21 +27,26 @@ module.exports = (trembleWeb, passport) ->
     res.redirect '/'
 
   app.get '/auth/github',
-  passport.authenticate('github', {scope: [ 'user:email' ]})
+  passport.strategies.github,
+  passport.passport.authenticate('github', {scope: [ 'user:email' ]})
 
   app.get '/auth/github/callback',
-  passport.authenticate('github', {scope: [ 'user:email' ]}),
+  passport.strategies.github,
+  passport.passport.authenticate('github', {scope: [ 'user:email' ]}),
   (req, res) ->
     winston.log 'info', 'GET /auth/github/callback'
-    res.render 'profile'
+    res.redirect '/profile'
 
-  #app.get '/auth/dropbox', passport.authenticate('dropbox-oauth2')
+  app.get '/auth/dropbox',
+  passport.strategies.dropbox,
+  passport.passport.authenticate('dropbox-oauth2')
 
-  #app.get '/auth/dropbox/callback',
-    #passport.authenticate 'dropbox-oauth2',
-    #{ failureRedirect: '/login' }
-    #, (req, res) ->
-      #res.redirect('/')
+  app.get '/auth/dropbox/callback',
+  passport.strategies.dropbox,
+  passport.passport.authenticate('dropbox-oauth2'),
+  (req, res) ->
+    winston.log 'info', 'GET /auth/dropbox/callback'
+    res.redirect '/profile'
 
   app.post '/hook',
   (req, res) ->
