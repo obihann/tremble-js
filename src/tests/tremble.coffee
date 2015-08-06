@@ -153,7 +153,7 @@ describe 'TrembleJS', ->
 
     it 'rendered images should match the sample image', (done) ->
       newImg = 'screenshot/' + options.commit + '/index.1680-1050.png'
-      sampleImg = 'sample-capture/index.1680-1050.png'
+      sampleImg = 'tests/sample-capture/index.1680-1050.png'
 
       options =
         tolerance: 0.1
