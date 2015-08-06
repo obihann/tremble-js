@@ -12,7 +12,7 @@ request = require 'supertest-as-promised'
 
 # load local modules
 trembleWeb = require('../bin/web.js').app
-tremble = require '../bin/worker'
+tremble = require '../bin/phantom'
 
 # configure app
 chai.use chaiAsPromised

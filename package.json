@@ -21,6 +21,7 @@
     "amqplib": "^0.3.2",
     "body-parser": "^1.13.2",
     "connect-mongo": "^0.8.1",
+    "dropbox": "^0.10.3",
     "express": "^4.13.1",
     "express-session": "^1.11.3",
     "gm": "^1.18.1",

@@ -1,89 +1,22 @@
-winston = require('winston')
-Q = require('q')
-amqp = require('amqplib')
-mkdirp = require('mkdirp')
-_ = require('lodash')
+winston = require 'winston'
+Q = require 'q'
+amqp = require 'amqplib'
+mkdirp = require 'mkdirp'
+_ = require 'lodash'
 phantom = require 'phantom'
 uuid = require 'uuid'
 config = require './tremble'
+dropbox = require 'dropbox'
+mongoose = require('mongoose')
+
+models = require("./schema").models
+app = require("./phantom")
 
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
 rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
 q = process.env.RABBITMQ_QUEUE
-
-app =
-  capture: (config) ->
-    winston.log 'info', 'app.capture'
-    deferred = Q.defer()
-
-    filename = 'screenshot/' + config.commit + '/' + config.route_name + '.'
-    filename += config.res.width + '-' + config.res.height + '.png'
-    winston.log 'verbose', 'rendering %s', filename
-
-    config.page.render filename, ->
-      winston.log 'verbose', 'render of %s complete', filename
-      deferred.resolve config
-
-    return deferred.promise
-
-  setRes: (config) ->
-    winston.log 'info', 'app.setRes'
-    deferred = Q.defer()
-    winston.log 'verbose', 'setting viewport to %sx%s',
-    config.res.width, config.res.height
-
-    size =
-      width: config.res.width
-      height: config.res.height
-
-    config.page.set 'viewportSize', size, (status) ->
-      if status.height == size.height && status.width == status.width
-        winston.log 'verbose', 'viewport size now %sx%s',
-        config.res.width, config.res.height
-        deferred.resolve config
-      else
-        winston.error status
-        deferred.reject status
-
-    return deferred.promise
-
-  open: (config) ->
-    winston.log 'info', 'app.open'
-    deferred = Q.defer()
-    winston.log 'verbose', 'opening %s', config.route_name
-
-    # todo: this should return status and be tested
-    pagePath = config.host + ':' + config.port + '/tremble/' + config.route
-    config.page.open pagePath, (status) ->
-      if status == 'success'
-        setTimeout(() ->
-          winston.log 'verbose', '%s, now open %s', config.route, status
-
-          deferred.resolve config
-        , config.delay)
-      else
-        winston.error status
-        deferred.reject status
-
-    return deferred.promise
-
-  process: (config) ->
-    winston.log 'info', 'app.process'
-    deferred = Q.defer()
-
-    mkdirp 'screenshot/' + config.commit, (err) ->
-      if err == null
-        winston.log 'verbose', 'mkdir %s', config.commit
-
-        config.ph.createPage (page) ->
-          config.page = page
-          deferred.resolve config
-      else
-        winston.error err
-        deferred.reject err
-
-    return deferred.promise
+mongoose.connect process.env.MONGO_DB
 
 doWork = ->
   winston.log 'info', 'doWork'
@@ -130,28 +63,66 @@ setupError = (err) ->
   winston.error err
   process.exit 1
 
-setupWorker = (ch) ->
+setupWorker = (app) ->
+  winston.log 'info', 'setting up worker'
   winston.log 'info', 'asserting channel %s', q
-  ok = ch.assertQueue q,
+  ok = app.rabbitCH.assertQueue q,
     durable: true
 
   ok = ok.then ->
     ch.prefetch 1
 
   ok = ok.then ->
-    ch.consume q, doWork, noAck: false
+    app.rabbitCH.consume q, doWork, noAck: false
 
   ok
 
-winston.log 'info', 'connecting to rabbitMQ %s', rabbitMQ
-amqp.connect rabbitMQ
-.then (conn) ->
-  winston.log 'info', 'creating channel'
-  conn.createChannel()
-.then (ch) ->
-  winston.log 'info', 'setting up worker'
-  setupWorker ch
-.catch (err) ->
-  setupError err
+loadUserData = (app) ->
+  # todo: @obihann change this find based on
+  # github id obtained from pull request
+  winston.log 'info', 'loading user from database'
+  models.user.findOne({ _id: '55c110a0fa70af612fb1d844'}).exec()
+  .then (user) ->
+    app.user = user
+    app
+  .then (app) ->
+    client = new dropbox.Client
+      key: process.env.DROPBOX_KEY
+      secret: process.env.DROPBOX_SECRET
+      sandbox: false
+      token: app.user.dropbox.accessToken
+
+    client.authDriver new dropbox.AuthDriver.NodeServer(8191)
+
+    app.dropbox = client
+    app
+  .then (app) ->
+    app.dropbox.getAccountInfo (err, accountInfo) ->
+      setupError(err) if err
+      winston.verbose "Hello, %s", accountInfo.name
+
+    app
+  .then null, (err) ->
+    setupError(err) if err
+  .end()
+
+loadRabbit = (app) ->
+  winston.log 'info', 'connecting to rabbitMQ %s', rabbitMQ
+  amqp.connect rabbitMQ
+  .then (conn) ->
+    winston.log 'info', 'creating channel'
+    app.rabbitConn = conn
+
+    conn.createChannel()
+  .then (ch) ->
+    app.rabbitCH = ch
+
+    app
+  .catch (err) ->
+    setupError err
+
+loadUserData(app)
+  .then(loadRabbit)
+  .then(setupWorker)
 
 module.exports = app
