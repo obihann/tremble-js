@@ -20,9 +20,9 @@ dropbox = require('dropbox');
 
 mongoose = require('mongoose');
 
-models = require("./schema").models;
+models = require("./utils/schema").models;
 
-app = require("./phantom");
+app = require("./utils/phantom");
 
 winston.level = process.env.WINSTON_LEVEL;
 

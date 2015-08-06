@@ -13,7 +13,7 @@ dropbox = require 'dropbox'
 
 # load local modules
 trembleWeb = require('../bin/web.js').app
-tremble = require '../bin/phantom'
+tremble = require '../bin/tasks/phantom'
 
 # configure app
 chai.use chaiAsPromised

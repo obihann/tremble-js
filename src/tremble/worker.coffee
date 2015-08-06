@@ -9,8 +9,8 @@ config = require './tremble'
 dropbox = require 'dropbox'
 mongoose = require('mongoose')
 
-models = require("./schema").models
-app = require("./phantom")
+models = require("./utils/schema").models
+app = require("./utils/phantom")
 
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002

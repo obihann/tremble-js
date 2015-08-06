@@ -18,7 +18,7 @@ mongoose = require('mongoose');
 
 MongoStore = require('connect-mongo')(session);
 
-passport = require('./passport');
+passport = require('./utils/passport');
 
 winston.level = process.env.WINSTON_LEVEL;
 

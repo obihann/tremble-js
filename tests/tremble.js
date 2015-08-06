@@ -24,7 +24,7 @@ dropbox = require('dropbox');
 
 trembleWeb = require('../bin/web.js').app;
 
-tremble = require('../bin/phantom');
+tremble = require('../bin/tasks/phantom');
 
 chai.use(chaiAsPromised);
 

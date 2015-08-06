@@ -10,7 +10,7 @@ mongoose = require 'mongoose'
 MongoStore = require('connect-mongo')(session)
 
 # load local modules
-passport = require './passport'
+passport = require './utils/passport'
 
 # setup variables
 winston.level = process.env.WINSTON_LEVEL
