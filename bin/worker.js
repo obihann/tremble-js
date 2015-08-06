@@ -38,14 +38,14 @@ doWork = function() {
   var e, mkSSDir, ssDir;
   winston.log('info', 'doWork');
   mkSSDir = function() {
-    return mkdirp('screenshot', function(err) {
+    return mkdirp('screenshots', function(err) {
       if (err === null) {
-        return winston.log('verbose', 'mkdir screenshot');
+        return winston.log('verbose', 'mkdir screenshots');
       }
     });
   };
   try {
-    ssDir = fs.lstatSync('screenshot');
+    ssDir = fs.lstatSync('screenshots');
     if (ssDir.isDirectory() !== true) {
       mkSSDir();
     }
@@ -113,7 +113,7 @@ loadUserData = function(app) {
     client = new dropbox.Client({
       key: process.env.DROPBOX_KEY,
       secret: process.env.DROPBOX_SECRET,
-      sandbox: false,
+      sandbox: true,
       token: app.user.dropbox.accessToken
     });
     client.authDriver(new dropbox.AuthDriver.NodeServer(8191));

@@ -22,12 +22,12 @@ doWork = ->
   winston.log 'info', 'doWork'
 
   mkSSDir = () ->
-    mkdirp 'screenshot', (err) ->
+    mkdirp 'screenshots', (err) ->
       if err == null
-        winston.log 'verbose', 'mkdir screenshot'
+        winston.log 'verbose', 'mkdir screenshots'
 
   try
-    ssDir = fs.lstatSync 'screenshot'
+    ssDir = fs.lstatSync 'screenshots'
 
     if ssDir.isDirectory() != true
       mkSSDir()
@@ -89,7 +89,7 @@ loadUserData = (app) ->
     client = new dropbox.Client
       key: process.env.DROPBOX_KEY
       secret: process.env.DROPBOX_SECRET
-      sandbox: false
+      sandbox: true
       token: app.user.dropbox.accessToken
 
     client.authDriver new dropbox.AuthDriver.NodeServer(8191)

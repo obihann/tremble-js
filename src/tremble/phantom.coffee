@@ -1,10 +1,9 @@
+fs = require 'fs'
 winston = require 'winston'
 Q = require 'q'
 mkdirp = require 'mkdirp'
 _ = require 'lodash'
 phantom = require 'phantom'
-uuid = require 'uuid'
-dropbox = require 'dropbox'
 
 winston.level = process.env.WINSTON_LEVEL
 
@@ -13,17 +12,24 @@ app =
     winston.log 'info', 'app.capture'
     deferred = Q.defer()
 
-    filename = 'screenshot/' + config.commit + '/' + config.route_name + '.'
+    filename = 'screenshots/' + config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
     winston.log 'verbose', 'rendering %s', filename
 
-    config.page.render filename, ->
+    config.page.renderBase64 'PNG', (dataString) ->
       winston.log 'verbose', 'render of %s complete', filename
-      deferred.resolve config
+      buffer = new Buffer dataString, 'base64'
 
-    # todo: store file in dropbox
-    # store latest file in mongo for quick display on user profile
-    # this.dropbox.writefile
+      fs.writeFile filename, buffer, (err) ->
+        deferred.reject "unable to save image" if err
+        winston.log 'verbose', 'file %s saved to filesystem', filename
+
+        app.dropbox.writeFile "tremble-js/" + filename, buffer, (err, stat) ->
+          deferred.reject "unable to save image to dropbox" if err
+          winston.log 'verbose', 'file %s saved to dropbox', filename
+          deferred.resolve config
+
+    # todo: store latest file in mongo for quick display on user profile
 
     return deferred.promise
 
@@ -72,7 +78,7 @@ app =
     winston.log 'info', 'app.process'
     deferred = Q.defer()
 
-    mkdirp 'screenshot/' + config.commit, (err) ->
+    mkdirp 'screenshots/' + config.commit, (err) ->
       if err == null
         winston.log 'verbose', 'mkdir %s', config.commit
 
