@@ -20,6 +20,22 @@ app =
       winston.log 'verbose', 'render of %s complete', filename
       buffer = new Buffer dataString, 'base64'
 
+      imagesArr = app.user.images
+      imageObj =
+        filename: config.res.width + '-' + config.res.height + '.png'
+        dropbox: "tremble-js/" + filename
+        commit: config.commit
+        data: dataString
+
+      imagesArr.push imageObj
+
+      # todo: @obihann ensure we only have two sets of images
+
+      app.user.images = imagesArr
+      app.user.save (err) ->
+        deferred.reject err if err
+        winston.log 'info', 'saved image in mongo'
+
       fs.writeFile filename, buffer, (err) ->
         deferred.reject "unable to save image" if err
         winston.log 'verbose', 'file %s saved to filesystem', filename
@@ -28,8 +44,6 @@ app =
           deferred.reject "unable to save image to dropbox" if err
           winston.log 'verbose', 'file %s saved to dropbox', filename
           deferred.resolve config
-
-    # todo: store latest file in mongo for quick display on user profile
 
     return deferred.promise
 

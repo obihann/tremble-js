@@ -23,9 +23,24 @@ app = {
     filename += config.res.width + '-' + config.res.height + '.png';
     winston.log('verbose', 'rendering %s', filename);
     config.page.renderBase64('PNG', function(dataString) {
-      var buffer;
+      var buffer, imageObj, imagesArr;
       winston.log('verbose', 'render of %s complete', filename);
       buffer = new Buffer(dataString, 'base64');
+      imagesArr = app.user.images;
+      imageObj = {
+        filename: config.res.width + '-' + config.res.height + '.png',
+        dropbox: "tremble-js/" + filename,
+        commit: config.commit,
+        data: dataString
+      };
+      imagesArr.push(imageObj);
+      app.user.images = imagesArr;
+      app.user.save(function(err) {
+        if (err) {
+          deferred.reject(err);
+        }
+        return winston.log('info', 'saved image in mongo');
+      });
       return fs.writeFile(filename, buffer, function(err) {
         if (err) {
           deferred.reject("unable to save image");
