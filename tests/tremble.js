@@ -1,4 +1,4 @@
-var Q, assert, chai, chaiAsPromised, commit, dropbox, fs, gm, mkdirp, options, phantom, port, request, tremble, trembleWeb, url, uuid;
+var Q, assert, chai, chaiAsPromised, commit, dropbox, fs, gm, mkdirp, options, phantom, port, request, tremble, trembleWeb, url, user, uuid;
 
 Q = require('q');
 
@@ -25,6 +25,15 @@ dropbox = require('dropbox');
 trembleWeb = require('../bin/web.js').app;
 
 tremble = require('../bin/tasks/phantom');
+
+user = {
+  images: [],
+  save: function() {
+    return true;
+  }
+};
+
+tremble.user = user;
 
 chai.use(chaiAsPromised);
 
