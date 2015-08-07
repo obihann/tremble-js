@@ -1,3 +1,7 @@
+# load npm modules
+_ = require 'lodash'
+Q = require 'q'
+
 module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
 
@@ -14,7 +18,26 @@ module.exports = (trembleWeb, passport) ->
       if typeof req.user.dropbox == 'undefined'
         res.render 'dropbox'
       else
-        res.render 'profile'
+        keys = []
+        images = [[],[]]
 
-  require('./auth') app, passport
-  require('./hooks') app
+        Q.all _.map req.user.images, (img) ->
+          if keys.indexOf(img.commit)<= -1
+            keys.push img.commit
+        .then ->
+          Q.all _.map req.user.images, (img) ->
+            if img.commit == keys[0]
+              images[0].push img
+            else
+              images[1].push img
+        .done ->
+          opts =
+            commitA: keys[0]
+            commitB: keys[1]
+            imagesA: images[0]
+            imagesB: images[1]
+
+          res.render 'profile', opts
+
+  require('./auth') trembleWeb, passport
+  require('./hooks') trembleWeb
