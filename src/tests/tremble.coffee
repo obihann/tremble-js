@@ -9,10 +9,18 @@ chai = require "chai"
 assert = require('chai').assert
 chaiAsPromised = require 'chai-as-promised'
 request = require 'supertest-as-promised'
+dropbox = require 'dropbox'
 
 # load local modules
 trembleWeb = require('../bin/web.js').app
-tremble = require '../bin/worker'
+tremble = require '../bin/tasks/phantom'
+
+user =
+  images: []
+  save: (cb) ->
+    cb()
+
+tremble.user = user
 
 # configure app
 chai.use chaiAsPromised
@@ -38,8 +46,18 @@ beforeEach (done) ->
   done()
 
 before (done) ->
+  client = new dropbox.Client
+    key: process.env.DROPBOX_KEY
+    secret: process.env.DROPBOX_SECRET
+    sandbox: true
+    token: process.env.DROPBOX_TOKEN
+
+  client.authDriver new dropbox.AuthDriver.NodeServer(8191)
+
+  tremble.dropbox = client
+
   mkSSDir = (done) ->
-    mkdirp 'screenshot', (err) ->
+    mkdirp 'screenshots', (err) ->
       if err == null
         done err
 
@@ -51,7 +69,7 @@ before (done) ->
       done()
 
   try
-    ssDir = fs.lstatSync 'screenshot'
+    ssDir = fs.lstatSync 'screenshots'
 
     if ssDir.isDirectory()
       setupPage()
@@ -64,8 +82,8 @@ before (done) ->
 after (done) ->
   options.page.close() if typeof options.page != 'undefined'
   options.ph.exit() if typeof options.ph != 'undefined'
-  fs.unlinkSync 'screenshot/' + commit + '/index.1680-1050.png'
-  fs.rmdir 'screenshot/' + commit
+  fs.unlinkSync 'screenshots/' + commit + '/index.1680-1050.png'
+  fs.rmdir 'screenshots/' + commit
   done()
 
 # unit tests
@@ -74,7 +92,7 @@ describe 'TrembleJS', ->
     it 'should make a new directory and create a new phantonjs page', (done) ->
       tremble.process(options)
         .then (config) ->
-          stats = fs.lstatSync 'screenshot/' + commit
+          stats = fs.lstatSync 'screenshots/' + commit
           assert.equal stats.isDirectory(), true, 'directory exists'
           assert.isDefined stats, 'directory stats are defined'
         .then ->
@@ -131,6 +149,7 @@ describe 'TrembleJS', ->
   
   describe 'worker.capture', ->
     it 'should render an image of the site', (done) ->
+      @timeout 4000
       options.page.open options.pagePath, (status) ->
         done status if status != 'success'
 
@@ -138,7 +157,10 @@ describe 'TrembleJS', ->
           .then (conf) ->
             deferred = Q.defer()
 
-            fs.readdir 'screenshot/' + conf.commit, (err, files) ->
+            options.imageBuffer = conf.imageBuffer
+            options.dataString = conf.dataString
+
+            fs.readdir 'screenshots/' + conf.commit, (err, files) ->
               deferred.reject err if err
               deferred.resolve files
 
@@ -152,16 +174,23 @@ describe 'TrembleJS', ->
             done err
 
     it 'rendered images should match the sample image', (done) ->
-      newImg = 'screenshot/' + options.commit + '/index.1680-1050.png'
-      sampleImg = 'sample-capture/index.1680-1050.png'
+      newImg = 'screenshots/' + options.commit + '/index.1680-1050.png'
+      sampleImg = 'tests/sample-capture/index.1680-1050.png'
 
-      options =
+      gmOpts =
         tolerance: 0.1
 
-      gm.compare newImg, sampleImg, options, (err, isEqual, equality) ->
+      gm.compare newImg, sampleImg, gmOpts, (err, isEqual, equality) ->
         done err if err
-
-        console.log "image equality %s", equality
 
         assert.equal isEqual, true
         done()
+  
+  describe 'worker.updateUser', ->
+    it 'should update the user.images array', (done) ->
+      tremble.updateUser(options)
+        .then (conf) ->
+          assert.equal tremble.user.images.length, 1
+          done()
+        .catch (err) ->
+          done err

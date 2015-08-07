@@ -10,7 +10,7 @@ mongoose = require 'mongoose'
 MongoStore = require('connect-mongo')(session)
 
 # load local modules
-passport = require './passport'
+passport = require './utils/passport'
 
 # setup variables
 winston.level = process.env.WINSTON_LEVEL
@@ -30,8 +30,8 @@ app.use session(
   secret: 'keyboard cat'
   resave: true
   saveUninitialized: false)
-app.use passport.initialize()
-app.use passport.session()
+app.use passport.passport.initialize()
+app.use passport.passport.session()
 
 # define this module
 trembleWeb =

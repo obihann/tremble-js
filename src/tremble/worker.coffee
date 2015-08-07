@@ -1,100 +1,43 @@
-winston = require('winston')
-Q = require('q')
-amqp = require('amqplib')
-mkdirp = require('mkdirp')
-_ = require('lodash')
+# load npm modules
+winston = require 'winston'
+Q = require 'q'
+amqp = require 'amqplib'
+mkdirp = require 'mkdirp'
+_ = require 'lodash'
 phantom = require 'phantom'
 uuid = require 'uuid'
 config = require './tremble'
+dropbox = require 'dropbox'
+mongoose = require('mongoose')
 
+# load local modules
+models = require("./utils/schema").models
+app = require("./tasks/phantom")
+
+# configure app
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
 rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
 q = process.env.RABBITMQ_QUEUE
+Q.longStackSupport = true
+mongoose.connect process.env.MONGO_DB
 
-app =
-  capture: (config) ->
-    winston.log 'info', 'app.capture'
-    deferred = Q.defer()
+# error handler
+setupError = (err) ->
+  winston.error err
+  process.exit 1
 
-    filename = 'screenshot/' + config.commit + '/' + config.route_name + '.'
-    filename += config.res.width + '-' + config.res.height + '.png'
-    winston.log 'verbose', 'rendering %s', filename
-
-    config.page.render filename, ->
-      winston.log 'verbose', 'render of %s complete', filename
-      deferred.resolve config
-
-    return deferred.promise
-
-  setRes: (config) ->
-    winston.log 'info', 'app.setRes'
-    deferred = Q.defer()
-    winston.log 'verbose', 'setting viewport to %sx%s',
-    config.res.width, config.res.height
-
-    size =
-      width: config.res.width
-      height: config.res.height
-
-    config.page.set 'viewportSize', size, (status) ->
-      if status.height == size.height && status.width == status.width
-        winston.log 'verbose', 'viewport size now %sx%s',
-        config.res.width, config.res.height
-        deferred.resolve config
-      else
-        winston.error status
-        deferred.reject status
-
-    return deferred.promise
-
-  open: (config) ->
-    winston.log 'info', 'app.open'
-    deferred = Q.defer()
-    winston.log 'verbose', 'opening %s', config.route_name
-
-    # todo: this should return status and be tested
-    pagePath = config.host + ':' + config.port + '/tremble/' + config.route
-    config.page.open pagePath, (status) ->
-      if status == 'success'
-        setTimeout(() ->
-          winston.log 'verbose', '%s, now open %s', config.route, status
-
-          deferred.resolve config
-        , config.delay)
-      else
-        winston.error status
-        deferred.reject status
-
-    return deferred.promise
-
-  process: (config) ->
-    winston.log 'info', 'app.process'
-    deferred = Q.defer()
-
-    mkdirp 'screenshot/' + config.commit, (err) ->
-      if err == null
-        winston.log 'verbose', 'mkdir %s', config.commit
-
-        config.ph.createPage (page) ->
-          config.page = page
-          deferred.resolve config
-      else
-        winston.error err
-        deferred.reject err
-
-    return deferred.promise
-
-doWork = ->
+# process request
+doWork = (msg) ->
   winston.log 'info', 'doWork'
 
   mkSSDir = () ->
-    mkdirp 'screenshot', (err) ->
+    mkdirp 'screenshots', (err) ->
       if err == null
-        winston.log 'verbose', 'mkdir screenshot'
+        winston.log 'verbose', 'mkdir screenshots'
 
   try
-    ssDir = fs.lstatSync 'screenshot'
+    ssDir = fs.lstatSync 'screenshots'
 
     if ssDir.isDirectory() != true
       mkSSDir()
@@ -121,37 +64,94 @@ doWork = ->
         .then app.open
         .then app.setRes
         .then app.capture
+        .then app.updateUser
+        .then app.saveDropbox
+        # todo: @obihann compare images and cleanup
+        .catch (err) ->
+          winston.error err
+          app.rabbitCH.nack msg, false, false
       ))
     )).done ->
+      app.user.images.sort (a, b) ->
+        return 1 if a.createdAt < b.createdAt
+        return -1 if b.createdAt < a.createdAt
+        return 0
+
+      keys = []
+      _.each app.user.images, (img) ->
+        keys.push img.commit if keys.indexOf(img.commit) <= -1
+
+      keys = keys.slice 0, 2
+
+      app.user.images = _.filter app.user.images, (img) ->
+        return keys.indexOf(img.commit) > -1
+
+      app.user.save (err) ->
+        deferred.reject err if err
+        winston.log 'info', 'saved image in mongo'
+
       winston.log 'info', 'Shutting down phantom'
+      app.rabbitCH.ack msg
       ph.exit()
 
-setupError = (err) ->
-  winston.error err
-  process.exit 1
-
-setupWorker = (ch) ->
+# setup rabbit channel
+setupWorker = (app) ->
+  winston.log 'info', 'setting up worker'
   winston.log 'info', 'asserting channel %s', q
-  ok = ch.assertQueue q,
+  ok = app.rabbitCH.assertQueue q,
     durable: true
 
   ok = ok.then ->
-    ch.prefetch 1
+    app.rabbitCH.prefetch 1
 
   ok = ok.then ->
-    ch.consume q, doWork, noAck: false
+    app.rabbitCH.consume q, doWork, noAck: false
 
   ok
 
-winston.log 'info', 'connecting to rabbitMQ %s', rabbitMQ
-amqp.connect rabbitMQ
-.then (conn) ->
-  winston.log 'info', 'creating channel'
-  conn.createChannel()
-.then (ch) ->
-  winston.log 'info', 'setting up worker'
-  setupWorker ch
-.catch (err) ->
-  setupError err
+# load user
+loadUserData = (app) ->
+  # todo: @obihann change this find based on
+  # github id obtained from pull request
+  winston.log 'info', 'loading user from database'
+  models.user.findOne({ _id: '55c110a0fa70af612fb1d844'}).exec()
+  .then (user) ->
+    app.user = user
+    app
+  .then (app) ->
+    client = new dropbox.Client
+      key: process.env.DROPBOX_KEY
+      secret: process.env.DROPBOX_SECRET
+      sandbox: true
+      token: app.user.dropbox.accessToken
+
+    client.authDriver new dropbox.AuthDriver.NodeServer(8191)
+
+    app.dropbox = client
+    app
+  .then null, (err) ->
+    setupError(err) if err
+  .end()
+
+# open connection to rabbitMQ
+loadRabbit = (app) ->
+  winston.log 'info', 'connecting to rabbitMQ %s', rabbitMQ
+  amqp.connect rabbitMQ
+  .then (conn) ->
+    winston.log 'info', 'creating channel'
+    app.rabbitConn = conn
+
+    conn.createChannel()
+  .then (ch) ->
+    app.rabbitCH = ch
+
+    app
+  .catch (err) ->
+    setupError err
+
+# initialize worker
+loadUserData(app)
+  .then(loadRabbit)
+  .then(setupWorker)
 
 module.exports = app
