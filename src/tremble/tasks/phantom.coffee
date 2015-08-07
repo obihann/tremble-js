@@ -20,30 +20,58 @@ app =
       winston.log 'verbose', 'render of %s complete', filename
       buffer = new Buffer dataString, 'base64'
 
-      imagesArr = app.user.images
-      imageObj =
-        filename: config.res.width + '-' + config.res.height + '.png'
-        dropbox: "tremble-js/" + filename
-        commit: config.commit
-        data: dataString
+      config.dataString = dataString
+      config.imageBuffer = buffer
 
-      imagesArr.push imageObj
-
-      # todo: @obihann ensure we only have two sets of images
-
-      app.user.images = imagesArr
-      app.user.save (err) ->
-        deferred.reject err if err
-        winston.log 'info', 'saved image in mongo'
-
+      # this should be a seperate step that saves both the
+      # current and last set of images to disk for comparison
       fs.writeFile filename, buffer, (err) ->
         deferred.reject "unable to save image" if err
         winston.log 'verbose', 'file %s saved to filesystem', filename
 
-        app.dropbox.writeFile "tremble-js/" + filename, buffer, (err, stat) ->
-          deferred.reject "unable to save image to dropbox" if err
-          winston.log 'verbose', 'file %s saved to dropbox', filename
-          deferred.resolve config
+        deferred.resolve config
+
+    return deferred.promise
+
+  saveDatabase: (config) ->
+    winston.log 'info', 'app.saveDatabasex'
+    deferred = Q.defer()
+
+    filename = 'Apps/tremble-js/screenshots/'
+    filename += config.commit + '/' + config.route_name + '.'
+    filename += config.res.width + '-' + config.res.height + '.png'
+
+    # todo: @obihann ensure we only have two sets of images
+
+    imagesArr = app.user.images
+    imageObj =
+      filename: config.res.width + '-' + config.res.height + '.png'
+      dropbox: filename
+      commit: config.commit
+      data: config.dataString
+
+    imagesArr.push imageObj
+
+    app.user.images = imagesArr
+    app.user.save (err) ->
+      deferred.reject err if err
+      winston.log 'info', 'saved image in mongo'
+      deferred.resolve config
+
+    return deferred.promise
+
+  saveDropbox: (config) ->
+    winston.log 'info', 'app.saveDropbox'
+    deferred = Q.defer()
+
+    filename = 'Apps/tremble-js/screenshots/'
+    filename += config.commit + '/' + config.route_name + '.'
+    filename += config.res.width + '-' + config.res.height + '.png'
+
+    app.dropbox.writeFile filename, config.buffer, (err, stat) ->
+      deferred.reject "unable to save image to dropbox" if err
+      winston.log 'verbose', 'file %s saved to dropbox', filename
+      deferred.resolve config
 
     return deferred.promise
 

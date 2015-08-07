@@ -28,8 +28,8 @@ tremble = require('../bin/tasks/phantom');
 
 user = {
   images: [],
-  save: function() {
-    return true;
+  save: function(cb) {
+    return cb();
   }
 };
 
@@ -180,7 +180,7 @@ describe('TrembleJS', function() {
       });
     });
   });
-  return describe('worker.capture', function() {
+  describe('worker.capture', function() {
     it('should render an image of the site', function(done) {
       this.timeout(4000);
       return options.page.open(options.pagePath, function(status) {
@@ -190,6 +190,8 @@ describe('TrembleJS', function() {
         return tremble.capture(options).then(function(conf) {
           var deferred;
           deferred = Q.defer();
+          options.imageBuffer = conf.imageBuffer;
+          options.dataString = conf.dataString;
           fs.readdir('screenshots/' + conf.commit, function(err, files) {
             if (err) {
               deferred.reject(err);
@@ -221,6 +223,16 @@ describe('TrembleJS', function() {
         }
         assert.equal(isEqual, true);
         return done();
+      });
+    });
+  });
+  return describe('worker.saveDatabase', function() {
+    return it('should update the user.images array', function(done) {
+      return tremble.saveDatabase(options).then(function(conf) {
+        assert.equal(tremble.user.images.length, 1);
+        return done();
+      })["catch"](function(err) {
+        return done(err);
       });
     });
   });

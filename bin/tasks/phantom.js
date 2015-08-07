@@ -23,37 +23,59 @@ app = {
     filename += config.res.width + '-' + config.res.height + '.png';
     winston.log('verbose', 'rendering %s', filename);
     config.page.renderBase64('PNG', function(dataString) {
-      var buffer, imageObj, imagesArr;
+      var buffer;
       winston.log('verbose', 'render of %s complete', filename);
       buffer = new Buffer(dataString, 'base64');
-      imagesArr = app.user.images;
-      imageObj = {
-        filename: config.res.width + '-' + config.res.height + '.png',
-        dropbox: "tremble-js/" + filename,
-        commit: config.commit,
-        data: dataString
-      };
-      imagesArr.push(imageObj);
-      app.user.images = imagesArr;
-      app.user.save(function(err) {
-        if (err) {
-          deferred.reject(err);
-        }
-        return winston.log('info', 'saved image in mongo');
-      });
+      config.dataString = dataString;
+      config.imageBuffer = buffer;
       return fs.writeFile(filename, buffer, function(err) {
         if (err) {
           deferred.reject("unable to save image");
         }
         winston.log('verbose', 'file %s saved to filesystem', filename);
-        return app.dropbox.writeFile("tremble-js/" + filename, buffer, function(err, stat) {
-          if (err) {
-            deferred.reject("unable to save image to dropbox");
-          }
-          winston.log('verbose', 'file %s saved to dropbox', filename);
-          return deferred.resolve(config);
-        });
+        return deferred.resolve(config);
       });
+    });
+    return deferred.promise;
+  },
+  saveDatabase: function(config) {
+    var deferred, filename, imageObj, imagesArr;
+    winston.log('info', 'app.saveDatabasex');
+    deferred = Q.defer();
+    filename = 'Apps/tremble-js/screenshots/';
+    filename += config.commit + '/' + config.route_name + '.';
+    filename += config.res.width + '-' + config.res.height + '.png';
+    imagesArr = app.user.images;
+    imageObj = {
+      filename: config.res.width + '-' + config.res.height + '.png',
+      dropbox: filename,
+      commit: config.commit,
+      data: config.dataString
+    };
+    imagesArr.push(imageObj);
+    app.user.images = imagesArr;
+    app.user.save(function(err) {
+      if (err) {
+        deferred.reject(err);
+      }
+      winston.log('info', 'saved image in mongo');
+      return deferred.resolve(config);
+    });
+    return deferred.promise;
+  },
+  saveDropbox: function(config) {
+    var deferred, filename;
+    winston.log('info', 'app.saveDropbox');
+    deferred = Q.defer();
+    filename = 'Apps/tremble-js/screenshots/';
+    filename += config.commit + '/' + config.route_name + '.';
+    filename += config.res.width + '-' + config.res.height + '.png';
+    app.dropbox.writeFile(filename, config.buffer, function(err, stat) {
+      if (err) {
+        deferred.reject("unable to save image to dropbox");
+      }
+      winston.log('verbose', 'file %s saved to dropbox', filename);
+      return deferred.resolve(config);
     });
     return deferred.promise;
   },

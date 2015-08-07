@@ -17,8 +17,8 @@ tremble = require '../bin/tasks/phantom'
 
 user =
   images: []
-  save: () ->
-    return true
+  save: (cb) ->
+    cb()
 
 tremble.user = user
 
@@ -157,6 +157,9 @@ describe 'TrembleJS', ->
           .then (conf) ->
             deferred = Q.defer()
 
+            options.imageBuffer = conf.imageBuffer
+            options.dataString = conf.dataString
+
             fs.readdir 'screenshots/' + conf.commit, (err, files) ->
               deferred.reject err if err
               deferred.resolve files
@@ -182,3 +185,12 @@ describe 'TrembleJS', ->
 
         assert.equal isEqual, true
         done()
+  
+  describe 'worker.saveDatabase', ->
+    it 'should update the user.images array', (done) ->
+      tremble.saveDatabase(options)
+        .then (conf) ->
+          assert.equal tremble.user.images.length, 1
+          done()
+        .catch (err) ->
+          done err
