@@ -63,6 +63,8 @@ doWork = (msg) ->
         .then app.open
         .then app.setRes
         .then app.capture
+        .then app.saveDatabase
+        .then app.saveDropbox
         .catch (err) ->
           winston.error err
           app.rabbitCH.nack msg, false, false
