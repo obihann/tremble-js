@@ -15,6 +15,13 @@ dropbox = require 'dropbox'
 trembleWeb = require('../bin/web.js').app
 tremble = require '../bin/tasks/phantom'
 
+user =
+  images: []
+  save: () ->
+    return true
+
+tremble.user = user
+
 # configure app
 chai.use chaiAsPromised
 port = process.env.PORT or 3002

@@ -1,6 +1,6 @@
-winston = require 'winston'
-
-winston.level = process.env.WINSTON_LEVEL
+# load npm modules
+_ = require 'lodash'
+Q = require 'q'
 
 module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
@@ -18,39 +18,26 @@ module.exports = (trembleWeb, passport) ->
       if typeof req.user.dropbox == 'undefined'
         res.render 'dropbox'
       else
-        res.render 'profile'
+        keys = []
+        images = [[],[]]
 
-  app.get '/logout',
-  (req, res) ->
-    winston.log 'info', 'GET /logout'
-    req.logout()
-    res.redirect '/'
+        Q.all _.map req.user.images, (img) ->
+          if keys.indexOf(img.commit)<= -1
+            keys.push img.commit
+        .then ->
+          Q.all _.map req.user.images, (img) ->
+            if img.commit == keys[0]
+              images[0].push img
+            else
+              images[1].push img
+        .done ->
+          opts =
+            commitA: keys[0]
+            commitB: keys[1]
+            imagesA: images[0]
+            imagesB: images[1]
 
-  app.get '/auth/github',
-  passport.strategies.github,
-  passport.passport.authenticate('github', {scope: [ 'user:email' ]})
+          res.render 'profile', opts
 
-  app.get '/auth/github/callback',
-  passport.strategies.github,
-  passport.passport.authenticate('github', {scope: [ 'user:email' ]}),
-  (req, res) ->
-    winston.log 'info', 'GET /auth/github/callback'
-    res.redirect '/profile'
-
-  app.get '/auth/dropbox',
-  passport.strategies.dropbox,
-  passport.passport.authenticate('dropbox-oauth2')
-
-  app.get '/auth/dropbox/callback',
-  passport.strategies.dropbox,
-  passport.passport.authenticate('dropbox-oauth2'),
-  (req, res) ->
-    winston.log 'info', 'GET /auth/dropbox/callback'
-    res.redirect '/profile'
-
-  app.post '/hook',
-  (req, res) ->
-    winston.log 'info', 'POST /hook'
-    trembleWeb.ch.assertQueue trembleWeb.q
-    trembleWeb.ch.sendToQueue trembleWeb.q, new Buffer("test")
-    res.sendStatus  201
+  require('./auth') trembleWeb, passport
+  require('./hooks') trembleWeb

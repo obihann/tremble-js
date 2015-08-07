@@ -14,7 +14,15 @@ UserSchema = new Schema({
     id: String,
     accessToken: String,
     createdAt: Number
-  }
+  },
+  images: [
+    {
+      filename: String,
+      dropbox: String,
+      commit: String,
+      data: String
+    }
+  ]
 });
 
 Users = mongoose.model('Users', UserSchema);

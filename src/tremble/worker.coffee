@@ -1,3 +1,4 @@
+# load npm modules
 winston = require 'winston'
 Q = require 'q'
 amqp = require 'amqplib'
@@ -9,16 +10,24 @@ config = require './tremble'
 dropbox = require 'dropbox'
 mongoose = require('mongoose')
 
+# load local modules
 models = require("./utils/schema").models
-app = require("./utils/phantom")
+app = require("./tasks/phantom")
 
+# configure app
 winston.level = process.env.WINSTON_LEVEL
 port = process.env.PORT or 3002
 rabbitMQ = process.env.RABBITMQ_BIGWIG_URL
 q = process.env.RABBITMQ_QUEUE
 mongoose.connect process.env.MONGO_DB
 
-doWork = ->
+# error handler
+setupError = (err) ->
+  winston.error err
+  process.exit 1
+
+# process request
+doWork = (msg) ->
   winston.log 'info', 'doWork'
 
   mkSSDir = () ->
@@ -54,15 +63,17 @@ doWork = ->
         .then app.open
         .then app.setRes
         .then app.capture
+        .catch (err) ->
+          winston.error err
+          app.rabbitCH.nack msg, false, false
+        # todo: @obihann compare images and cleanup
       ))
     )).done ->
       winston.log 'info', 'Shutting down phantom'
+      app.rabbitCH.ack msg
       ph.exit()
 
-setupError = (err) ->
-  winston.error err
-  process.exit 1
-
+# setup rabbit channel
 setupWorker = (app) ->
   winston.log 'info', 'setting up worker'
   winston.log 'info', 'asserting channel %s', q
@@ -70,13 +81,14 @@ setupWorker = (app) ->
     durable: true
 
   ok = ok.then ->
-    ch.prefetch 1
+    app.rabbitCH.prefetch 1
 
   ok = ok.then ->
     app.rabbitCH.consume q, doWork, noAck: false
 
   ok
 
+# load user
 loadUserData = (app) ->
   # todo: @obihann change this find based on
   # github id obtained from pull request
@@ -96,16 +108,11 @@ loadUserData = (app) ->
 
     app.dropbox = client
     app
-  .then (app) ->
-    app.dropbox.getAccountInfo (err, accountInfo) ->
-      setupError(err) if err
-      winston.verbose "Hello, %s", accountInfo.name
-
-    app
   .then null, (err) ->
     setupError(err) if err
   .end()
 
+# open connection to rabbitMQ
 loadRabbit = (app) ->
   winston.log 'info', 'connecting to rabbitMQ %s', rabbitMQ
   amqp.connect rabbitMQ
@@ -121,6 +128,7 @@ loadRabbit = (app) ->
   .catch (err) ->
     setupError err
 
+# initialize worker
 loadUserData(app)
   .then(loadRabbit)
   .then(setupWorker)

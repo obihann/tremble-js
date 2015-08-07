@@ -22,7 +22,7 @@ mongoose = require('mongoose');
 
 models = require("./utils/schema").models;
 
-app = require("./utils/phantom");
+app = require("./tasks/phantom");
 
 winston.level = process.env.WINSTON_LEVEL;
 
@@ -34,7 +34,12 @@ q = process.env.RABBITMQ_QUEUE;
 
 mongoose.connect(process.env.MONGO_DB);
 
-doWork = function() {
+setupError = function(err) {
+  winston.error(err);
+  return process.exit(1);
+};
+
+doWork = function(msg) {
   var e, mkSSDir, ssDir;
   winston.log('info', 'doWork');
   mkSSDir = function() {
@@ -69,18 +74,17 @@ doWork = function() {
           commit: commit,
           res: res
         };
-        return app.process(config).then(app.open).then(app.setRes).then(app.capture);
+        return app.process(config).then(app.open).then(app.setRes).then(app.capture)["catch"](function(err) {
+          winston.error(err);
+          return app.rabbitCH.nack(msg, false, false);
+        });
       }));
     })).done(function() {
       winston.log('info', 'Shutting down phantom');
+      app.rabbitCH.ack(msg);
       return ph.exit();
     });
   });
-};
-
-setupError = function(err) {
-  winston.error(err);
-  return process.exit(1);
 };
 
 setupWorker = function(app) {
@@ -91,7 +95,7 @@ setupWorker = function(app) {
     durable: true
   });
   ok = ok.then(function() {
-    return ch.prefetch(1);
+    return app.rabbitCH.prefetch(1);
   });
   ok = ok.then(function() {
     return app.rabbitCH.consume(q, doWork, {
@@ -118,14 +122,6 @@ loadUserData = function(app) {
     });
     client.authDriver(new dropbox.AuthDriver.NodeServer(8191));
     app.dropbox = client;
-    return app;
-  }).then(function(app) {
-    app.dropbox.getAccountInfo(function(err, accountInfo) {
-      if (err) {
-        setupError(err);
-      }
-      return winston.verbose("Hello, %s", accountInfo.name);
-    });
     return app;
   }).then(null, function(err) {
     if (err) {
