@@ -11,7 +11,7 @@ module.exports = function(trembleWeb, passport) {
     if (typeof req.user === 'undefined') {
       return res.render('index');
     } else {
-      return res.render('profile');
+      return res.redirect('/profile');
     }
   });
   app.get('/profile', function(req, res) {

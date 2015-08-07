@@ -9,7 +9,7 @@ module.exports = (trembleWeb, passport) ->
     if typeof req.user == 'undefined'
       res.render 'index'
     else
-      res.render 'profile'
+      res.redirect '/profile'
 
   app.get '/profile', (req, res) ->
     if typeof req.user == 'undefined'

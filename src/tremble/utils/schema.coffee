@@ -12,9 +12,10 @@ UserSchema = new Schema
     accessToken: String
     createdAt: Number
   images: [
+    commit: String
+    createdAt: Number
     filename: String
     dropbox: String
-    commit: String
     data: String
   ]
 

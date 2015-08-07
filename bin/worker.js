@@ -32,6 +32,8 @@ rabbitMQ = process.env.RABBITMQ_BIGWIG_URL;
 
 q = process.env.RABBITMQ_QUEUE;
 
+Q.longStackSupport = true;
+
 mongoose.connect(process.env.MONGO_DB);
 
 setupError = function(err) {
@@ -74,12 +76,38 @@ doWork = function(msg) {
           commit: commit,
           res: res
         };
-        return app.process(config).then(app.open).then(app.setRes).then(app.capture)["catch"](function(err) {
+        return app.process(config).then(app.open).then(app.setRes).then(app.capture).then(app.updateUser).then(app.saveDropbox)["catch"](function(err) {
           winston.error(err);
           return app.rabbitCH.nack(msg, false, false);
         });
       }));
     })).done(function() {
+      var keys;
+      app.user.images.sort(function(a, b) {
+        if (a.createdAt < b.createdAt) {
+          return 1;
+        }
+        if (b.createdAt < a.createdAt) {
+          return -1;
+        }
+        return 0;
+      });
+      keys = [];
+      _.each(app.user.images, function(img) {
+        if (keys.indexOf(img.commit) <= -1) {
+          return keys.push(img.commit);
+        }
+      });
+      keys = keys.slice(0, 2);
+      app.user.images = _.filter(app.user.images, function(img) {
+        return keys.indexOf(img.commit) > -1;
+      });
+      app.user.save(function(err) {
+        if (err) {
+          deferred.reject(err);
+        }
+        return winston.log('info', 'saved image in mongo');
+      });
       winston.log('info', 'Shutting down phantom');
       app.rabbitCH.ack(msg);
       return ph.exit();
