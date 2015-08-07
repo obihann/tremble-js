@@ -2,7 +2,28 @@
 
 ## [Unreleased](https://github.com/tremble-js/tremble-js/tree/HEAD)
 
-[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.8...HEAD)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.9-beta...HEAD)
+
+**Fixed bugs:**
+
+- ensure we only have 2 sets of commit images in the database [\#48](https://github.com/tremble-js/tremble-js/issues/48)
+
+**Closed issues:**
+
+- display most recent images for comparison, and if they match on profile [\#46](https://github.com/tremble-js/tremble-js/issues/46)
+- we need to store compiled source for coverage reports [\#39](https://github.com/tremble-js/tremble-js/issues/39)
+- Should we display the users most recent images on their profile? [\#22](https://github.com/tremble-js/tremble-js/issues/22)
+- add dropbox integration [\#8](https://github.com/tremble-js/tremble-js/issues/8)
+
+**Merged pull requests:**
+
+- Develop [\#50](https://github.com/tremble-js/tremble-js/pull/50) ([obihann](https://github.com/obihann))
+- more focused tests [\#49](https://github.com/tremble-js/tremble-js/pull/49) ([obihann](https://github.com/obihann))
+- Storing images [\#47](https://github.com/tremble-js/tremble-js/pull/47) ([obihann](https://github.com/obihann))
+- Dropbox storage [\#44](https://github.com/tremble-js/tremble-js/pull/44) ([obihann](https://github.com/obihann))
+
+## [v0.2.9-beta](https://github.com/tremble-js/tremble-js/tree/v0.2.9-beta) (2015-08-04)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.8...v0.2.9-beta)
 
 **Merged pull requests:**
 
