@@ -211,13 +211,13 @@ describe('TrembleJS', function() {
       });
     });
     return it('rendered images should match the sample image', function(done) {
-      var newImg, sampleImg;
+      var gmOpts, newImg, sampleImg;
       newImg = 'screenshots/' + options.commit + '/index.1680-1050.png';
       sampleImg = 'tests/sample-capture/index.1680-1050.png';
-      options = {
+      gmOpts = {
         tolerance: 0.1
       };
-      return gm.compare(newImg, sampleImg, options, function(err, isEqual, equality) {
+      return gm.compare(newImg, sampleImg, gmOpts, function(err, isEqual, equality) {
         if (err) {
           done(err);
         }
@@ -226,9 +226,9 @@ describe('TrembleJS', function() {
       });
     });
   });
-  return describe('worker.saveDatabase', function() {
+  return describe('worker.updateUser', function() {
     return it('should update the user.images array', function(done) {
-      return tremble.saveDatabase(options).then(function(conf) {
+      return tremble.updateUser(options).then(function(conf) {
         assert.equal(tremble.user.images.length, 1);
         return done();
       })["catch"](function(err) {

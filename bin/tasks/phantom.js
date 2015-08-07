@@ -15,6 +15,12 @@ phantom = require('phantom');
 winston.level = process.env.WINSTON_LEVEL;
 
 app = {
+  compare: function(config) {
+    var deferred;
+    winston.log('info', 'app.compare');
+    deferred = Q.defer();
+    return deferred.promise;
+  },
   capture: function(config) {
     var deferred, filename;
     winston.log('info', 'app.capture');
@@ -28,6 +34,7 @@ app = {
       buffer = new Buffer(dataString, 'base64');
       config.dataString = dataString;
       config.imageBuffer = buffer;
+      deferred.resolve(config);
       return fs.writeFile(filename, buffer, function(err) {
         if (err) {
           deferred.reject("unable to save image");
@@ -38,29 +45,22 @@ app = {
     });
     return deferred.promise;
   },
-  saveDatabase: function(config) {
-    var deferred, filename, imageObj, imagesArr;
-    winston.log('info', 'app.saveDatabasex');
+  updateUser: function(config) {
+    var deferred, filename, obj;
+    winston.log('info', 'app.updateUser');
     deferred = Q.defer();
     filename = 'Apps/tremble-js/screenshots/';
     filename += config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
-    imagesArr = app.user.images;
-    imageObj = {
+    obj = {
       filename: config.res.width + '-' + config.res.height + '.png',
       dropbox: filename,
       commit: config.commit,
-      data: config.dataString
+      data: config.dataString,
+      createdAt: Date.now()
     };
-    imagesArr.push(imageObj);
-    app.user.images = imagesArr;
-    app.user.save(function(err) {
-      if (err) {
-        deferred.reject(err);
-      }
-      winston.log('info', 'saved image in mongo');
-      return deferred.resolve(config);
-    });
+    app.user.images.push(obj);
+    deferred.resolve(config);
     return deferred.promise;
   },
   saveDropbox: function(config) {

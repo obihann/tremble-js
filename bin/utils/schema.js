@@ -17,9 +17,10 @@ UserSchema = new Schema({
   },
   images: [
     {
+      commit: String,
+      createdAt: Number,
       filename: String,
       dropbox: String,
-      commit: String,
       data: String
     }
   ]

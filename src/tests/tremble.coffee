@@ -177,18 +177,18 @@ describe 'TrembleJS', ->
       newImg = 'screenshots/' + options.commit + '/index.1680-1050.png'
       sampleImg = 'tests/sample-capture/index.1680-1050.png'
 
-      options =
+      gmOpts =
         tolerance: 0.1
 
-      gm.compare newImg, sampleImg, options, (err, isEqual, equality) ->
+      gm.compare newImg, sampleImg, gmOpts, (err, isEqual, equality) ->
         done err if err
 
         assert.equal isEqual, true
         done()
   
-  describe 'worker.saveDatabase', ->
+  describe 'worker.updateUser', ->
     it 'should update the user.images array', (done) ->
-      tremble.saveDatabase(options)
+      tremble.updateUser(options)
         .then (conf) ->
           assert.equal tremble.user.images.length, 1
           done()

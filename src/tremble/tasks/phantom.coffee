@@ -8,6 +8,12 @@ phantom = require 'phantom'
 winston.level = process.env.WINSTON_LEVEL
 
 app =
+  compare: (config) ->
+    winston.log 'info', 'app.compare'
+    deferred = Q.defer()
+
+    return deferred.promise
+
   capture: (config) ->
     winston.log 'info', 'app.capture'
     deferred = Q.defer()
@@ -22,6 +28,7 @@ app =
 
       config.dataString = dataString
       config.imageBuffer = buffer
+      deferred.resolve config
 
       # this should be a seperate step that saves both the
       # current and last set of images to disk for comparison
@@ -33,30 +40,24 @@ app =
 
     return deferred.promise
 
-  saveDatabase: (config) ->
-    winston.log 'info', 'app.saveDatabasex'
+  updateUser: (config) ->
+    winston.log 'info', 'app.updateUser'
     deferred = Q.defer()
 
     filename = 'Apps/tremble-js/screenshots/'
     filename += config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
 
-    # todo: @obihann ensure we only have two sets of images
-
-    imagesArr = app.user.images
-    imageObj =
+    obj =
       filename: config.res.width + '-' + config.res.height + '.png'
       dropbox: filename
       commit: config.commit
       data: config.dataString
+      createdAt: Date.now()
 
-    imagesArr.push imageObj
+    app.user.images.push obj
 
-    app.user.images = imagesArr
-    app.user.save (err) ->
-      deferred.reject err if err
-      winston.log 'info', 'saved image in mongo'
-      deferred.resolve config
+    deferred.resolve config
 
     return deferred.promise
 
