@@ -46,7 +46,7 @@ setupError = function(err) {
 };
 
 doWork = function(msg) {
-  var e, mkSSDir, ssDir;
+  var body, e, mkSSDir, ssDir;
   winston.log('info', 'doWork');
   mkSSDir = function() {
     return mkdirp('screenshots', function(err) {
@@ -64,73 +64,106 @@ doWork = function(msg) {
     e = _error;
     mkSSDir();
   }
-  return phantom.create(function(ph) {
-    var commit;
-    winston.log('info', 'Starting phantom');
-    commit = uuid.v4();
-    return Q.all(_.map(config.pages, function(page) {
-      return Q.all(_.map(config.resolutions, function(res) {
-        config = {
-          host: "http://localhost",
-          route_name: page.title,
-          route: page.path,
-          delay: config.delay,
-          port: port,
-          ph: ph,
-          commit: commit,
-          res: res
-        };
-        return app.process(config).then(app.open).then(app.setRes).then(app.capture).then(app.updateUser).then(app.saveDropbox)["catch"](function(err) {
-          winston.error(err);
-          return app.rabbitCH.nack(msg, false, false);
+  body = JSON.parse(msg.content.toString());
+  return loadUserData(app, body.sender.login).then(function(app) {
+    var commit, logEntry, type, username;
+    commit = body.head_commit.id;
+    logEntry = new models.log({
+      commit: commit,
+      repo: body.repository.full_name,
+      request: msg.content
+    });
+    app.user.repo = body.repository.full_name;
+    if (typeof body.organization !== 'undefined') {
+      username = body.organization.login;
+      type = 'org';
+    } else {
+      username = body.repository.owner.login;
+      type = 'user';
+    }
+    return phantom.create(function(ph) {
+      winston.log('info', 'Starting phantom');
+      return Q.all(_.map(config.pages, function(page) {
+        return Q.all(_.map(config.resolutions, function(res) {
+          config = {
+            host: "http://localhost",
+            route_name: page.title,
+            route: page.path,
+            delay: config.delay,
+            port: port,
+            ph: ph,
+            commit: commit,
+            res: res,
+            repo: body.repository.full_name
+          };
+          return app.process(config).then(app.open).then(app.setRes).then(app.capture).then(app.updateUser).then(app.saveDropbox)["catch"](function(err) {
+            winston.error(err);
+            return app.rabbitCH.nack(msg, false, false);
+          });
+        }));
+      })).then(function(res) {
+        var deferred, keys;
+        deferred = Q.defer();
+        logEntry.user = app.user;
+        app.user.images.sort(function(a, b) {
+          if (a.createdAt < b.createdAt) {
+            1;
+          }
+          if (b.createdAt < a.createdAt) {
+            -1;
+          }
+          return 0;
         });
-      }));
-    })).then(function(res) {
-      var deferred, keys;
-      deferred = Q.defer();
-      app.user.images.sort(function(a, b) {
-        if (a.createdAt < b.createdAt) {
-          1;
+        keys = [];
+        _.each(app.user.images, function(img) {
+          if (keys.indexOf(img.commit) <= -1) {
+            return keys.push(img.commit);
+          }
+        });
+        if (keys.length >= 3) {
+          keys = keys.slice(1, 3);
         }
-        if (b.createdAt < a.createdAt) {
-          -1;
-        }
-        return 0;
+        app.user.images = _.filter(app.user.images, function(img) {
+          return keys.indexOf(img.commit) > -1;
+        });
+        app.user.save(function(err) {
+          if (err) {
+            deferred.reject(err);
+          }
+          winston.log('info', 'saved image in mongo');
+          return deferred.resolve(app.user);
+        });
+        return deferred.promise;
+      }).then(compare.saveToDisk).then(compare.compare).then(function(user) {
+        var deferred;
+        deferred = Q.defer();
+        logEntry.results = app.user.newResults;
+        logEntry.status = "success";
+        logEntry.save(function(err) {
+          if (err) {
+            return deferred.reject(err);
+          }
+        });
+        user.save(function(err) {
+          if (err) {
+            deferred.reject(err);
+          }
+          winston.log('info', 'saved compare results in mongo');
+          return deferred.resolve(app.user);
+        });
+        winston.log('info', 'Shutting down phantom');
+        app.rabbitCH.ack(msg);
+        ph.exit();
+        return deferred.promise;
+      })["catch"](function(err) {
+        logEntry.status = "error";
+        logEntry.message = err;
+        return logEntry.save(function(err) {
+          if (err) {
+            return deferred.reject(err);
+          }
+        });
       });
-      keys = [];
-      _.each(app.user.images, function(img) {
-        if (keys.indexOf(img.commit) <= -1) {
-          return keys.push(img.commit);
-        }
-      });
-      if (keys.length >= 3) {
-        keys = keys.slice(1, 3);
-      }
-      app.user.images = _.filter(app.user.images, function(img) {
-        return keys.indexOf(img.commit) > -1;
-      });
-      app.user.save(function(err) {
-        if (err) {
-          deferred.reject(err);
-        }
-        winston.log('info', 'saved image in mongo');
-        return deferred.resolve(app.user);
-      });
-      return deferred.promise;
-    }).then(compare.saveToDisk).then(compare.compare).then(function(user) {
-      var deferred;
-      deferred = Q.defer();
-      user.save(function(err) {
-        if (err) {
-          deferred.reject(err);
-        }
-        winston.log('info', 'saved compare results in mongo');
-        return deferred.resolve(app.user);
-      });
-      winston.log('info', 'Shutting down phantom');
-      app.rabbitCH.ack(msg);
-      ph.exit();
-      return deferred.promise;
     });
   });
 };
@@ -153,10 +186,10 @@ setupWorker = function(app) {
   return ok;
 };
 
-loadUserData = function(app) {
+loadUserData = function(app, login) {
   winston.log('info', 'loading user from database');
   return models.user.findOne({
-    _id: '55c110a0fa70af612fb1d844'
+    username: login
   }).exec().then(function(user) {
     app.user = user;
     return app;
@@ -192,6 +225,6 @@ loadRabbit = function(app) {
   });
 };
 
-loadUserData(app).then(loadRabbit).then(setupWorker);
+loadRabbit(app).then(setupWorker);
 
 module.exports = app;

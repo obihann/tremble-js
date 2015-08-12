@@ -1,4 +1,4 @@
-var Schema, UserSchema, Users, mongoose;
+var LogSchema, Logs, Schema, UserSchema, Users, mongoose;
 
 mongoose = require('mongoose');
 
@@ -16,7 +16,8 @@ UserSchema = new Schema({
       leftCommit: String,
       right: String,
       rightCommit: String,
-      status: Boolean
+      status: Boolean,
+      repo: String
     }
   ],
   dropbox: {
@@ -35,13 +36,42 @@ UserSchema = new Schema({
   ]
 });
 
+LogSchema = new Schema({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'Users'
+  },
+  time: {
+    type: Date,
+    "default": Date.now
+  },
+  status: String,
+  repo: String,
+  commit: String,
+  message: String,
+  request: String,
+  results: [
+    {
+      left: String,
+      leftCommit: String,
+      right: String,
+      rightCommit: String,
+      status: Boolean
+    }
+  ]
+});
+
 Users = mongoose.model('Users', UserSchema);
+
+Logs = mongoose.model('Logs', LogSchema);
 
 module.exports = {
   schema: {
-    user: UserSchema
+    user: UserSchema,
+    log: LogSchema
   },
   models: {
-    user: Users
+    user: Users,
+    log: Logs
   }
 };

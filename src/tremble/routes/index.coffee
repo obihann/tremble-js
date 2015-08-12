@@ -1,6 +1,7 @@
 # load npm modules
 _ = require 'lodash'
 Q = require 'q'
+models = require("../utils/schema").models
 
 module.exports = (trembleWeb, passport) ->
   app = trembleWeb.app
@@ -42,10 +43,30 @@ module.exports = (trembleWeb, passport) ->
 
           cleanResults.push result if matchLevel == 2
         .done ->
-          opts =
-            results: cleanResults
+          models.log.find {user: req.user._id}, (err, logs) ->
+            _.each logs, (log) ->
+              logSlash = (log.commit.indexOf '/') + 1
+              logLen = log.commit.length
+              log.cCommit = log.commit.substring logSlash, logLen
 
-          res.render 'profile', opts
+              _.each log.results, (result) ->
+                result.cLeftCommit = result.leftCommit.substring(0, 7)
+                result.cRightCommit = result.rightCommit.substring(0, 7)
+
+                lSlash = (result.left.indexOf '/') + 1
+                rSlash = (result.right.indexOf '/') + 1
+
+                lLen = result.left.length
+                rLen = result.right.length
+
+                result.cLeft = result.left.substring lSlash, lLen
+                result.cRight = result.right.substring rSlash, rLen
+
+            opts =
+              logs: logs.reverse()
+              results: cleanResults
+
+            res.render 'profile', opts
 
   require('./auth') trembleWeb, passport
   require('./hooks') trembleWeb

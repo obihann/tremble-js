@@ -48,8 +48,9 @@ nav.navbar-inverse.navbar-fixed-top
         .panel.panel-default
           .panel-heading
               h3 Results:
-              h4.results.results__left= results[0].cLeftCommit
-              h4.results.results__right= results[0].cRightCommit
+              a(target="_blank", href="https://github.com/"+results[0].repo+"/compare/"+results[0].leftCommit+"..."+results[0].rightCommit)
+                h4.results.results__left= results[0].cLeftCommit
+                h4.results.results__right= results[0].cRightCommit
           .panel-body
               each res in results
                 .row
@@ -63,9 +64,36 @@ nav.navbar-inverse.navbar-fixed-top
                       h5 Something is different here... 
                 .row
                   .col-xs-6.thumb--wrapper
-                    p= res.leftData.filename
                     img.thumb(src='data:image/png;base64,' + res.leftData.data)
                   .col-xs-6.thumb--wrapper
-                    p= res.rightData.filename
                     img.thumb(src='data:image/png;base64,' + res.rightData.data)
+    .row
+      .col-xs-12
+        .panel.panel-default
+          .panel-heading
+            h3 Past Comparisons:
+          .panel-body.logs
+            table.table-center.table.table-hover.table-bordered
+              thead
+                tr.row
+                  td.col-xs-2
+                    h4 date
+                  td.col-xs-2
+                    h4 current
+                  td.col-xs-2
+                    h4 original
+                  td.col-xs-4
+                    h4 results
+              tbody
+                each val in logs
+                  if val.status == "success"
+                    tr.success.row
+                      include table-logs.jade
+                  else if val.status == "error"
+                    tr.danger.row
+                      include table-logs.jade
+                  else
+                    tr.warning.row
+                      include table-logs.jade
+include footer.jade
 include footer.jade

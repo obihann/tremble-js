@@ -1,4 +1,4 @@
-# load npm modules
+# load npbody.head_commit.id
 winston = require 'winston'
 Q = require 'q'
 amqp = require 'amqplib'
@@ -47,69 +47,103 @@ doWork = (msg) ->
   catch e
     mkSSDir()
 
-  phantom.create (ph) ->
-    winston.log 'info', 'Starting phantom'
-    commit =  uuid.v4()
+  body = JSON.parse msg.content.toString()
 
-    Q.all(_.map(config.pages, (page) ->
-      Q.all(_.map(config.resolutions, (res) ->
-        config =
-          host: "http://localhost"
-          route_name: page.title
-          route: page.path
-          delay: config.delay
-          port: port
-          ph: ph
-          commit: commit
-          res: res
+  loadUserData app, body.sender.login
+    .then (app) ->
+      commit =  body.head_commit.id
 
-        app.process config
-        .then app.open
-        .then app.setRes
-        .then app.capture
-        .then app.updateUser
-        .then app.saveDropbox
+      logEntry = new models.log
+        commit: commit
+        repo: body.repository.full_name
+        request: msg.content
+
+      app.user.repo = body.repository.full_name
+
+      if typeof body.organization != 'undefined'
+        username = body.organization.login
+        type = 'org'
+      else
+        username = body.repository.owner.login
+        type = 'user'
+
+      phantom.create (ph) ->
+        winston.log 'info', 'Starting phantom'
+
+        Q.all(_.map(config.pages, (page) ->
+          Q.all(_.map(config.resolutions, (res) ->
+            config =
+              host: "http://localhost"
+              route_name: page.title
+              route: page.path
+              delay: config.delay
+              port: port
+              ph: ph
+              commit: commit
+              res: res
+              repo: body.repository.full_name
+
+            app.process config
+            .then app.open
+            .then app.setRes
+            .then app.capture
+            .then app.updateUser
+            .then app.saveDropbox
+            .catch (err) ->
+              winston.error err
+              app.rabbitCH.nack msg, false, false
+          ))
+        )).then (res) ->
+          deferred = Q.defer()
+
+          logEntry.user = app.user
+          app.user.images.sort (a, b) ->
+            1 if a.createdAt < b.createdAt
+            -1 if b.createdAt < a.createdAt
+            0
+
+          keys = []
+          _.each app.user.images, (img) ->
+            keys.push img.commit if keys.indexOf(img.commit) <= -1
+
+          keys = keys.slice 1, 3 if keys.length >= 3
+
+          app.user.images = _.filter app.user.images, (img) ->
+            keys.indexOf(img.commit) > -1
+
+          app.user.save (err) ->
+            deferred.reject err if err
+            winston.log 'info', 'saved image in mongo'
+            deferred.resolve app.user
+
+          deferred.promise
+        .then compare.saveToDisk
+        .then compare.compare
+        .then (user) ->
+          deferred = Q.defer()
+
+          logEntry.results= app.user.newResults
+          logEntry.status = "success"
+
+          logEntry.save (err) ->
+            deferred.reject err if err
+
+          user.save (err) ->
+            deferred.reject err if err
+            winston.log 'info', 'saved compare results in mongo'
+            deferred.resolve app.user
+
+          winston.log 'info', 'Shutting down phantom'
+          app.rabbitCH.ack msg
+          ph.exit()
+
+          deferred.promise
         .catch (err) ->
-          winston.error err
-          app.rabbitCH.nack msg, false, false
-      ))
-    )).then (res) ->
-      deferred = Q.defer()
-      app.user.images.sort (a, b) ->
-        1 if a.createdAt < b.createdAt
-        -1 if b.createdAt < a.createdAt
-        0
+          logEntry.status = "error"
+          logEntry.message = err
 
-      keys = []
-      _.each app.user.images, (img) ->
-        keys.push img.commit if keys.indexOf(img.commit) <= -1
-
-      keys = keys.slice 1, 3 if keys.length >= 3
-
-      app.user.images = _.filter app.user.images, (img) ->
-        keys.indexOf(img.commit) > -1
-
-      app.user.save (err) ->
-        deferred.reject err if err
-        winston.log 'info', 'saved image in mongo'
-        deferred.resolve app.user
-
-      deferred.promise
-    .then compare.saveToDisk
-    .then compare.compare
-    .then (user) ->
-      deferred = Q.defer()
-
-      user.save (err) ->
-        deferred.reject err if err
-        winston.log 'info', 'saved compare results in mongo'
-        deferred.resolve app.user
-
-      winston.log 'info', 'Shutting down phantom'
-      app.rabbitCH.ack msg
-      ph.exit()
-
-      deferred.promise
+          logEntry.save (err) ->
+            deferred.reject err if err
 
 # setup rabbit channel
 setupWorker = (app) ->
@@ -127,11 +161,11 @@ setupWorker = (app) ->
   ok
 
 # load user
-loadUserData = (app) ->
+loadUserData = (app, login) ->
   # todo: @obihann change this find based on
   # github id obtained from pull request
   winston.log 'info', 'loading user from database'
-  models.user.findOne({ _id: '55c110a0fa70af612fb1d844'}).exec()
+  models.user.findOne({ username: login}).exec()
   .then (user) ->
     app.user = user
     app
@@ -167,8 +201,7 @@ loadRabbit = (app) ->
     setupError err
 
 # initialize worker
-loadUserData(app)
-  .then(loadRabbit)
+loadRabbit app
   .then(setupWorker)
 
 module.exports = app
