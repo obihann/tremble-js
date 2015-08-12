@@ -20,7 +20,13 @@ td.col-xs-4
       each res in val.results
         if res.status == true
           tr.row.success
-            include table-logs-results.jade
-        else if res.status
+            td.col-xs-8
+              span.log-left= res.cLeft
+            td.col-xs-2
+              span.log-left pass
+        else
           tr.row.danger
-            include table-logs-results.jade
+            td.col-xs-8
+              span.log-left= res.cLeft
+            td.col-xs-2
+              span.log-left fail
