@@ -76,7 +76,7 @@ module.exports = function(trembleWeb, passport) {
               });
             });
             opts = {
-              logs: logs,
+              logs: logs.reverse(),
               results: cleanResults
             };
             return res.render('profile', opts);

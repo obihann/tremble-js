@@ -63,7 +63,7 @@ module.exports = (trembleWeb, passport) ->
                 result.cRight = result.right.substring rSlash, rLen
 
             opts =
-              logs: logs
+              logs: logs.reverse()
               results: cleanResults
 
             res.render 'profile', opts

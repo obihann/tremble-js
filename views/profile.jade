@@ -89,54 +89,12 @@ nav.navbar-inverse.navbar-fixed-top
                 each val in logs
                   if val.status == "success"
                     tr.success.row
-                      td.col-xs-3
-                        span.log-time= val.time
-                      td.col-xs-1
-                        span.log-status= val.status
-                      td.col-xs-2
-                        span.log-repo= val.repo
-                      td.col-xs-4
-                        span.log-repo= val.message
+                      include table-logs.jade
                   else if val.status == "error"
                     tr.danger.row
-                      td.col-xs-3
-                        span.log-time= val.time
-                      td.col-xs-1
-                        span.log-status= val.status
-                      td.col-xs-2
-                        span.log-repo= val.repo
-                      td.col-xs-4
-                        span.log-repo= val.message
+                      include table-logs.jade
                   else
                     tr.warning.row
-                      td.col-xs-2
-                        span.log-time= val.time
-                      td.col-xs-1
-                        span.log-commit= val.cCommit
-                      td.col-xs-2
-                        span.log-commit= val.results[0].cLeftCommit
-                      td.col-xs-4
-                        table.table-center.table.table-hover.table-bordered
-                          thead
-                            tr.row
-                              td.col-xs-4
-                                h5 file
-                              td.col-xs-2
-                                h5 status
-                          tbody
-                            each res in val.results
-                              if res.status == true
-                                tr.row.success
-                                  td.col-xs-8
-                                    span.log-left= res.cLeft
-                                  td.col-xs-2
-                                    span.log-left pass
-                              else if res.status
-                                tr.row.danger
-                                  td.col-xs-8
-                                    span.log-left= res.cLeft
-                                  td.col-xs-2
-                                    span.log-left fail
-                        //-span.log-repo= val.results
+                      include table-logs.jade
 include footer.jade
 include footer.jade
