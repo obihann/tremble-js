@@ -2,7 +2,23 @@
 
 ## [Unreleased](https://github.com/tremble-js/tremble-js/tree/HEAD)
 
-[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.9-beta...HEAD)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.9...HEAD)
+
+**Fixed bugs:**
+
+- when testing cleanup images saved in dropbox [\#45](https://github.com/tremble-js/tremble-js/issues/45)
+
+**Closed issues:**
+
+- Compare images across builds to help identify bugs or changes [\#1](https://github.com/tremble-js/tremble-js/issues/1)
+
+**Merged pull requests:**
+
+- comparing images and displaying on user profile [\#55](https://github.com/tremble-js/tremble-js/pull/55) ([obihann](https://github.com/obihann))
+- Image comparison [\#51](https://github.com/tremble-js/tremble-js/pull/51) ([obihann](https://github.com/obihann))
+
+## [v0.2.9](https://github.com/tremble-js/tremble-js/tree/v0.2.9) (2015-08-07)
+[Full Changelog](https://github.com/tremble-js/tremble-js/compare/v0.2.9-beta...v0.2.9)
 
 **Fixed bugs:**
 
