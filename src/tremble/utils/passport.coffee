@@ -9,7 +9,9 @@ passport.serializeUser (user, done) ->
   done null, user
 
 passport.deserializeUser (user, done) ->
-  done null, user
+  models.user.findOne { _id: user._id }, (err, user) ->
+    done err if err
+    done null, user
 
 passportObject =
   passport: passport

@@ -10,6 +10,15 @@ UserSchema = new Schema({
   username: String,
   accessToken: String,
   createdAt: Number,
+  results: [
+    {
+      left: String,
+      leftCommit: String,
+      right: String,
+      rightCommit: String,
+      status: Boolean
+    }
+  ],
   dropbox: {
     id: String,
     accessToken: String,

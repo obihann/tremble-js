@@ -15,34 +15,46 @@ module.exports = function(trembleWeb, passport) {
     }
   });
   app.get('/profile', function(req, res) {
-    var images, keys;
+    var cleanResults;
     if (typeof req.user === 'undefined') {
       return res.redirect('/');
     } else {
       if (typeof req.user.dropbox === 'undefined') {
         return res.render('dropbox');
       } else {
-        keys = [];
-        images = [[], []];
-        return Q.all(_.map(req.user.images, function(img) {
-          if (keys.indexOf(img.commit) <= -1) {
-            return keys.push(img.commit);
-          }
-        })).then(function() {
-          return Q.all(_.map(req.user.images, function(img) {
-            if (img.commit === keys[0]) {
-              return images[0].push(img);
-            } else {
-              return images[1].push(img);
+        cleanResults = [];
+        return Q.all(_.map(req.user.results, function(result) {
+          var leftSlash, matchLevel, rightSlash;
+          result.cLeftCommit = result.leftCommit.substring(0, 7);
+          result.cRightCommit = result.rightCommit.substring(0, 7);
+          leftSlash = (result.left.indexOf('/')) + 1;
+          rightSlash = (result.right.indexOf('/')) + 1;
+          result.cLeft = result.left.substring(leftSlash, result.left.length);
+          result.cRight = result.right.substring(rightSlash, result.right.length);
+          matchLevel = 0;
+          result.leftData = _.find(req.user.images, function(img) {
+            if (img.filename === result.left) {
+              matchLevel++;
             }
-          }));
-        }).done(function() {
+            if (img.filename === result.left) {
+              return img;
+            }
+          });
+          result.rightData = _.find(req.user.images, function(img) {
+            if (img.filename === result.right) {
+              matchLevel++;
+            }
+            if (img.filename === result.right) {
+              return img;
+            }
+          });
+          if (matchLevel === 2) {
+            return cleanResults.push(result);
+          }
+        })).done(function() {
           var opts;
           opts = {
-            commitA: keys[0],
-            commitB: keys[1],
-            imagesA: images[0],
-            imagesB: images[1]
+            results: cleanResults
           };
           return res.render('profile', opts);
         });
