@@ -64,3 +64,9 @@ footer {
 footer a {
   color: #9d9d9d;
 }
+
+@media (max-width:801px) {
+  body {
+    background-color: #00FF00;
+  }
+}
