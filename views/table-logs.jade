@@ -1,0 +1,22 @@
+td.col-xs-2
+  span.log-time= val.time
+td.col-xs-1
+  span.log-commit= val.cCommit
+td.col-xs-2
+  span.log-commit= val.results[0].cLeftCommit
+td.col-xs-4
+  table.table-center.table.table-hover.table-bordered
+    thead
+      tr.row
+        td.col-xs-4
+          h5 file
+        td.col-xs-2
+          h5 status
+    tbody
+      each res in val.results
+        if res.status == true
+          tr.row.success
+            include table-logs-results.jade
+        else if res.status
+          tr.row.danger
+            include table-logs-results.jade
