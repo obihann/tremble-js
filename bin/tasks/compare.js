@@ -76,22 +76,26 @@ app = {
       gmOpts = {
         tolerance: 0
       };
+      user.newResults = [];
       if (typeof user.results === 'undefined') {
         user.results = [];
       }
       gm.compare(leftImg, rightImg, gmOpts, function(err, isEqual, equality) {
+        var resultObj;
         if (err) {
           winston.error(err);
         }
         winston.log('info', 'comparison of %s, and %s', leftImg, rightImg);
         winston.log('info', 'results: %s', leftImg, rightImg, isEqual);
-        user.results.push({
+        resultObj = {
           left: img.filename,
           leftCommit: img.commit,
           right: rightImgObj.filename,
           rightCommit: rightImgObj.commit,
           status: isEqual
-        });
+        };
+        user.newResults.push(resultObj);
+        user.results.push(resultObj);
         return deferred.resolve(user);
       });
       return deferred.promise;

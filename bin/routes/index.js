@@ -1,8 +1,10 @@
-var Q, _;
+var Q, _, models;
 
 _ = require('lodash');
 
 Q = require('q');
+
+models = require("../utils/schema").models;
 
 module.exports = function(trembleWeb, passport) {
   var app;
@@ -52,11 +54,33 @@ module.exports = function(trembleWeb, passport) {
             return cleanResults.push(result);
           }
         })).done(function() {
-          var opts;
-          opts = {
-            results: cleanResults
-          };
-          return res.render('profile', opts);
+          return models.log.find({
+            user: req.user._id
+          }, function(err, logs) {
+            var opts;
+            _.each(logs, function(log) {
+              var logLen, logSlash;
+              logSlash = (log.commit.indexOf('/')) + 1;
+              logLen = log.commit.length;
+              log.cCommit = log.commit.substring(logSlash, logLen);
+              return _.each(log.results, function(result) {
+                var lLen, lSlash, rLen, rSlash;
+                result.cLeftCommit = result.leftCommit.substring(0, 7);
+                result.cRightCommit = result.rightCommit.substring(0, 7);
+                lSlash = (result.left.indexOf('/')) + 1;
+                rSlash = (result.right.indexOf('/')) + 1;
+                lLen = result.left.length;
+                rLen = result.right.length;
+                result.cLeft = result.left.substring(lSlash, lLen);
+                return result.cRight = result.right.substring(rSlash, rLen);
+              });
+            });
+            opts = {
+              logs: logs,
+              results: cleanResults
+            };
+            return res.render('profile', opts);
+          });
         });
       }
     }

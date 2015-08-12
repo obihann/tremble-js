@@ -61,18 +61,23 @@ app =
       gmOpts =
         tolerance: 0
 
+      user.newResults = []
       user.results = [] if typeof user.results == 'undefined'
 
       gm.compare leftImg, rightImg, gmOpts, (err, isEqual, equality) ->
         winston.error err if err
         winston.log 'info', 'comparison of %s, and %s', leftImg, rightImg
         winston.log 'info', 'results: %s', leftImg, rightImg, isEqual
-        user.results.push
+        resultObj =
           left: img.filename
           leftCommit: img.commit
           right: rightImgObj.filename
           rightCommit: rightImgObj.commit
           status: isEqual
+
+        user.newResults.push resultObj
+        user.results.push resultObj
+
         deferred.resolve user
 
       deferred.promise
