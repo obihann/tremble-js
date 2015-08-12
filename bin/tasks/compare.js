@@ -88,6 +88,7 @@ app = {
         winston.log('info', 'comparison of %s, and %s', leftImg, rightImg);
         winston.log('info', 'results: %s', leftImg, rightImg, isEqual);
         resultObj = {
+          repo: user.repo,
           left: img.filename,
           leftCommit: img.commit,
           right: rightImgObj.filename,

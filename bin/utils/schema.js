@@ -16,7 +16,8 @@ UserSchema = new Schema({
       leftCommit: String,
       right: String,
       rightCommit: String,
-      status: Boolean
+      status: Boolean,
+      repo: String
     }
   ],
   dropbox: {

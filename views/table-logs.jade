@@ -1,9 +1,13 @@
 td.col-xs-2
   span.log-time= val.time
 td.col-xs-1
-  span.log-commit= val.cCommit
+  span.log-commit
+    a(target="_blank", href="https://github.com/"+val.repo+"/commit/"+val.results[0].leftCommit)
+      = val.results[0].cLeftCommit
 td.col-xs-2
-  span.log-commit= val.results[0].cLeftCommit
+  span.log-commit
+    a(target="_blank", href="https://github.com/"+val.repo+"/commit/"+val.results[0].rightCommit)
+      = val.results[0].cRightCommit
 td.col-xs-4
   table.table-center.table.table-hover.table-bordered
     thead

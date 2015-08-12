@@ -13,6 +13,7 @@ UserSchema = new Schema
     right: String
     rightCommit: String
     status: Boolean
+    repo: String
   ]
   dropbox:
     id: String

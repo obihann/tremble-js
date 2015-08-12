@@ -58,6 +58,8 @@ doWork = (msg) ->
         repo: body.repository.full_name
         request: msg.content
 
+      app.user.repo = body.repository.full_name
+
       if typeof body.organization != 'undefined'
         username = body.organization.login
         type = 'org'
@@ -79,6 +81,7 @@ doWork = (msg) ->
               ph: ph
               commit: commit
               res: res
+              repo: body.repository.full_name
 
             app.process config
             .then app.open
@@ -200,8 +203,5 @@ loadRabbit = (app) ->
 # initialize worker
 loadRabbit app
   .then(setupWorker)
-#loadUserData(app)
-  #.then(loadRabbit)
-  #.then(setupWorker)
 
 module.exports = app

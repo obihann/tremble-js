@@ -73,6 +73,7 @@ doWork = function(msg) {
       repo: body.repository.full_name,
       request: msg.content
     });
+    app.user.repo = body.repository.full_name;
     if (typeof body.organization !== 'undefined') {
       username = body.organization.login;
       type = 'org';
@@ -92,7 +93,8 @@ doWork = function(msg) {
             port: port,
             ph: ph,
             commit: commit,
-            res: res
+            res: res,
+            repo: body.repository.full_name
           };
           return app.process(config).then(app.open).then(app.setRes).then(app.capture).then(app.updateUser).then(app.saveDropbox)["catch"](function(err) {
             winston.error(err);
