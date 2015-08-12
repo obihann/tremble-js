@@ -51,6 +51,9 @@ doWork = (msg) ->
     winston.log 'info', 'Starting phantom'
     commit =  uuid.v4()
 
+    logEntry = new models.log
+      commit: commit
+
     Q.all(_.map(config.pages, (page) ->
       Q.all(_.map(config.resolutions, (res) ->
         config =
@@ -75,6 +78,8 @@ doWork = (msg) ->
       ))
     )).then (res) ->
       deferred = Q.defer()
+
+      logEntry.user = app.user
       app.user.images.sort (a, b) ->
         1 if a.createdAt < b.createdAt
         -1 if b.createdAt < a.createdAt
@@ -99,6 +104,11 @@ doWork = (msg) ->
     .then compare.compare
     .then (user) ->
       deferred = Q.defer()
+
+      logEntry.results= app.user.newResults
+
+      logEntry.save (err) ->
+        deferred.reject err if err
 
       user.save (err) ->
         deferred.reject err if err

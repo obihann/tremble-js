@@ -65,9 +65,12 @@ doWork = function(msg) {
     mkSSDir();
   }
   return phantom.create(function(ph) {
-    var commit;
+    var commit, logEntry;
     winston.log('info', 'Starting phantom');
     commit = uuid.v4();
+    logEntry = new models.log({
+      commit: commit
+    });
     return Q.all(_.map(config.pages, function(page) {
       return Q.all(_.map(config.resolutions, function(res) {
         config = {
@@ -88,6 +91,7 @@ doWork = function(msg) {
     })).then(function(res) {
       var deferred, keys;
       deferred = Q.defer();
+      logEntry.user = app.user;
       app.user.images.sort(function(a, b) {
         if (a.createdAt < b.createdAt) {
           1;
@@ -120,6 +124,12 @@ doWork = function(msg) {
     }).then(compare.saveToDisk).then(compare.compare).then(function(user) {
       var deferred;
       deferred = Q.defer();
+      logEntry.results = app.user.newResults;
+      logEntry.save(function(err) {
+        if (err) {
+          return deferred.reject(err);
+        }
+      });
       user.save(function(err) {
         if (err) {
           deferred.reject(err);
