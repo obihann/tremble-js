@@ -7,7 +7,7 @@ nav.navbar-inverse.navbar-fixed-top
       a(href="https://github.com/tremble-js/tremble-js") Fork me on GitHub
         i.fa.fa-code-fork
     li
-      a(href="/profile") Sign in
+      a(href="/auth/github") Sign in
         i.fa.fa-sign-in
 .container
   .col-xs-10.wrapper.text-center.col-xs-offset-1
@@ -16,33 +16,44 @@ nav.navbar-inverse.navbar-fixed-top
       p Automatically build your website, screenshot every page, and store them in the cloud grouped by the commit.
       p When you find a bug and don't know what commit is responsible, check your screenshots and easily identify when it was introduced.
     .row
-      .col-xs-12.col-md-6
-        .panel.panel-primary
-          .panel-heading
-            h3 Step 1:
-          .panel-body
-            p Sign in with GitHub
-            a(href="/auth/github")
-              i.fa.fa-github.fa-4x(title="Sign in with GitHub")
-      .col-xs-12.col-md-6
-        .panel.panel-default.disabled
-          .panel-heading
-            h3 Step 2:
-          .panel-body
-            p Sign in with Dropbox 
-            a
-              i.fa.fa-dropbox.fa-4x(title="Sign in with Dropbox")
-     .row
-        .col.col-xs-12
-          .panel.panel-default.disabled
-            .panel-heading
-              h3 Step 3:
-            .panel-body
-              p Add the webhook to your GitHub repos:
-              pre https://localhost:8181/
-              p.bg-warning
-                small
-                  i IMPORTANT:
-                  br
-                  i If your repo is part of a GitHub organization you will have to first create a BitBucket team with a matching name.
+      ul#myTabs.nav.nav-tabs(role="tablist")
+        li.active(role="presentation")
+          a(href="#setup", aria-controls="setup", data-toggle="tab") Setup 
+        li.disabled(role="presentation")
+          a(href="#", aria-controls="results", data-toggle="tab") Results
+        li.disabled(role="presentation")
+          a(href="#", aria-controls="past", data-toggle="tab") Past Comparisons
+    .row
+      .tab-content
+        .tab-pane.active(role="tabpanel", id="setup")
+          .row
+            .col-xs-12.col-md-6
+              .panel.panel-primary
+                .panel-heading
+                  h3 Step 1:
+                .panel-body
+                  p Sign in with GitHub
+                  a(href="/auth/github")
+                    i.fa.fa-github.fa-4x(title="Sign in with GitHub")
+            .col-xs-12.col-md-6
+              .panel.panel-default.disabled
+                .panel-heading
+                  h3 Step 2:
+                .panel-body
+                  p Sign in with Dropbox 
+                  a
+                    i.fa.fa-dropbox.fa-4x(title="Sign in with Dropbox")
+           .row
+              .col.col-xs-12
+                .panel.panel-default.disabled
+                  .panel-heading
+                    h3 Step 3:
+                  .panel-body
+                    p Add the webhook to your GitHub repos:
+                    pre https://localhost:8181/
+                    p.bg-warning
+                      small
+                        i IMPORTANT:
+                        br
+                        i If your repo is part of a GitHub organization you will have to first create a BitBucket team with a matching name.
 include footer.jade

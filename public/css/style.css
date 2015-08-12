@@ -83,8 +83,19 @@ h3 {
 .results.results__left {
 }
 
+.results.results__right {
+}
+
+.results.results__right::Before {
+  content: " - ";
+}
+
 .results.results__left::After {
   content: " - ";
+}
+
+.tab-content {
+  padding: 1rem;
 }
 
 a {
