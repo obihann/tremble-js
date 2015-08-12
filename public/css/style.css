@@ -76,6 +76,17 @@ h3 {
   font-size: 1.6rem;
 }
 
+.results {
+  display: inline-block;
+}
+
+.results.results__left {
+}
+
+.results.results__left::After {
+  content: " - ";
+}
+
 a {
     color: #333533;
 }

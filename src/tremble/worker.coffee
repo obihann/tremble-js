@@ -10,9 +10,12 @@ config = require './tremble'
 dropbox = require 'dropbox'
 mongoose = require('mongoose')
 
+console.log config
+
 # load local modules
 models = require("./utils/schema").models
 app = require("./tasks/phantom")
+compare = require("./tasks/compare")
 
 # configure app
 winston.level = process.env.WINSTON_LEVEL
@@ -66,33 +69,47 @@ doWork = (msg) ->
         .then app.capture
         .then app.updateUser
         .then app.saveDropbox
-        # todo: @obihann compare images and cleanup
         .catch (err) ->
           winston.error err
           app.rabbitCH.nack msg, false, false
       ))
-    )).done ->
+    )).then (res) ->
+      deferred = Q.defer()
       app.user.images.sort (a, b) ->
-        return 1 if a.createdAt < b.createdAt
-        return -1 if b.createdAt < a.createdAt
-        return 0
+        1 if a.createdAt < b.createdAt
+        -1 if b.createdAt < a.createdAt
+        0
 
       keys = []
       _.each app.user.images, (img) ->
         keys.push img.commit if keys.indexOf(img.commit) <= -1
 
-      keys = keys.slice 0, 2
+      keys = keys.slice 1, 3 if keys.length >= 3
 
       app.user.images = _.filter app.user.images, (img) ->
-        return keys.indexOf(img.commit) > -1
+        keys.indexOf(img.commit) > -1
 
       app.user.save (err) ->
         deferred.reject err if err
         winston.log 'info', 'saved image in mongo'
+        deferred.resolve app.user
+
+      deferred.promise
+    .then compare.saveToDisk
+    .then compare.compare
+    .then (user) ->
+      deferred = Q.defer()
+
+      user.save (err) ->
+        deferred.reject err if err
+        winston.log 'info', 'saved compare results in mongo'
+        deferred.resolve app.user
 
       winston.log 'info', 'Shutting down phantom'
       app.rabbitCH.ack msg
       ph.exit()
+
+      deferred.promise
 
 # setup rabbit channel
 setupWorker = (app) ->

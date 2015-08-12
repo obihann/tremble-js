@@ -15,46 +15,29 @@ phantom = require('phantom');
 winston.level = process.env.WINSTON_LEVEL;
 
 app = {
-  compare: function(config) {
-    var deferred;
-    winston.log('info', 'app.compare');
-    deferred = Q.defer();
-    return deferred.promise;
-  },
   capture: function(config) {
     var deferred, filename;
-    winston.log('info', 'app.capture');
+    winston.log('info', 'phantom.capture');
     deferred = Q.defer();
     filename = 'screenshots/' + config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
     winston.log('verbose', 'rendering %s', filename);
     config.page.renderBase64('PNG', function(dataString) {
-      var buffer;
       winston.log('verbose', 'render of %s complete', filename);
-      buffer = new Buffer(dataString, 'base64');
       config.dataString = dataString;
-      config.imageBuffer = buffer;
-      deferred.resolve(config);
-      return fs.writeFile(filename, buffer, function(err) {
-        if (err) {
-          deferred.reject("unable to save image");
-        }
-        winston.log('verbose', 'file %s saved to filesystem', filename);
-        return deferred.resolve(config);
-      });
+      return deferred.resolve(config);
     });
     return deferred.promise;
   },
   updateUser: function(config) {
     var deferred, filename, obj;
-    winston.log('info', 'app.updateUser');
+    winston.log('info', 'phantom.updateUser');
     deferred = Q.defer();
-    filename = 'Apps/tremble-js/screenshots/';
-    filename += config.commit + '/' + config.route_name + '.';
+    filename = config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
     obj = {
-      filename: config.res.width + '-' + config.res.height + '.png',
-      dropbox: filename,
+      filename: filename,
+      dropbox: 'Apps/tremble-js/screenshots/' + filename,
       commit: config.commit,
       data: config.dataString,
       createdAt: Date.now()
@@ -64,13 +47,14 @@ app = {
     return deferred.promise;
   },
   saveDropbox: function(config) {
-    var deferred, filename;
-    winston.log('info', 'app.saveDropbox');
+    var buffer, deferred, filename;
+    winston.log('info', 'phantom.saveDropbox');
     deferred = Q.defer();
     filename = 'Apps/tremble-js/screenshots/';
     filename += config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
-    app.dropbox.writeFile(filename, config.buffer, function(err, stat) {
+    buffer = new Buffer(config.dataString, 'base64');
+    app.dropbox.writeFile(filename, buffer, function(err, stat) {
       if (err) {
         deferred.reject("unable to save image to dropbox");
       }
@@ -81,7 +65,7 @@ app = {
   },
   setRes: function(config) {
     var deferred, size;
-    winston.log('info', 'app.setRes');
+    winston.log('info', 'phantom.setRes');
     deferred = Q.defer();
     winston.log('verbose', 'setting viewport to %sx%s', config.res.width, config.res.height);
     size = {
@@ -101,7 +85,7 @@ app = {
   },
   open: function(config) {
     var deferred, pagePath;
-    winston.log('info', 'app.open');
+    winston.log('info', 'phantom.open');
     deferred = Q.defer();
     winston.log('verbose', 'opening %s', config.route_name);
     pagePath = config.host + ':' + config.port + '/tremble/' + config.route;
@@ -120,7 +104,7 @@ app = {
   },
   process: function(config) {
     var deferred;
-    winston.log('info', 'app.process');
+    winston.log('info', 'phantom.process');
     deferred = Q.defer();
     mkdirp('screenshots/' + config.commit, function(err) {
       if (err === null) {

@@ -14,6 +14,7 @@ dropbox = require 'dropbox'
 # load local modules
 trembleWeb = require('../bin/web.js').app
 tremble = require '../bin/tasks/phantom'
+compare = require '../bin/tasks/compare'
 
 user =
   images: []
@@ -154,6 +155,21 @@ describe 'TrembleJS', ->
         done status if status != 'success'
 
         tremble.capture(options)
+          .then (config) ->
+            deferred = Q.defer()
+
+            filename = 'screenshots/' + config.commit
+            filename += '/' + config.route_name + '.'
+            filename += config.res.width + '-' + config.res.height + '.png'
+
+            buffer = new Buffer config.dataString, 'base64'
+
+            fs.writeFile filename, buffer, (err) ->
+              deferred.reject "unable to save image" if err
+
+              deferred.resolve config
+
+            deferred.promise
           .then (conf) ->
             deferred = Q.defer()
 

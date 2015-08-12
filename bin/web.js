@@ -40,6 +40,7 @@ app.use(session({
   }, function(err) {
     console.log(err || 'connect-mongodb setup ok');
   }),
+  ttl: 24 * 3600,
   secret: 'keyboard cat',
   resave: true,
   saveUninitialized: false

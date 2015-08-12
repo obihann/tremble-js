@@ -1,4 +1,4 @@
-var Q, _, amqp, app, config, doWork, dropbox, loadRabbit, loadUserData, mkdirp, models, mongoose, phantom, port, q, rabbitMQ, setupError, setupWorker, uuid, winston;
+var Q, _, amqp, app, compare, config, doWork, dropbox, loadRabbit, loadUserData, mkdirp, models, mongoose, phantom, port, q, rabbitMQ, setupError, setupWorker, uuid, winston;
 
 winston = require('winston');
 
@@ -20,9 +20,13 @@ dropbox = require('dropbox');
 
 mongoose = require('mongoose');
 
+console.log(config);
+
 models = require("./utils/schema").models;
 
 app = require("./tasks/phantom");
+
+compare = require("./tasks/compare");
 
 winston.level = process.env.WINSTON_LEVEL;
 
@@ -81,14 +85,15 @@ doWork = function(msg) {
           return app.rabbitCH.nack(msg, false, false);
         });
       }));
-    })).done(function() {
-      var keys;
+    })).then(function(res) {
+      var deferred, keys;
+      deferred = Q.defer();
       app.user.images.sort(function(a, b) {
         if (a.createdAt < b.createdAt) {
-          return 1;
+          1;
         }
         if (b.createdAt < a.createdAt) {
-          return -1;
+          -1;
         }
         return 0;
       });
@@ -98,7 +103,9 @@ doWork = function(msg) {
           return keys.push(img.commit);
         }
       });
-      keys = keys.slice(0, 2);
+      if (keys.length >= 3) {
+        keys = keys.slice(1, 3);
+      }
       app.user.images = _.filter(app.user.images, function(img) {
         return keys.indexOf(img.commit) > -1;
       });
@@ -106,11 +113,24 @@ doWork = function(msg) {
         if (err) {
           deferred.reject(err);
         }
-        return winston.log('info', 'saved image in mongo');
+        winston.log('info', 'saved image in mongo');
+        return deferred.resolve(app.user);
+      });
+      return deferred.promise;
+    }).then(compare.saveToDisk).then(compare.compare).then(function(user) {
+      var deferred;
+      deferred = Q.defer();
+      user.save(function(err) {
+        if (err) {
+          deferred.reject(err);
+        }
+        winston.log('info', 'saved compare results in mongo');
+        return deferred.resolve(app.user);
       });
       winston.log('info', 'Shutting down phantom');
       app.rabbitCH.ack(msg);
-      return ph.exit();
+      ph.exit();
+      return deferred.promise;
     });
   });
 };

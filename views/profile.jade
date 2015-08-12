@@ -47,20 +47,25 @@ nav.navbar-inverse.navbar-fixed-top
       .col-xs-12
         .panel.panel-default
           .panel-heading
-            h3 Images:
+              h3 Results:
+              h4.results.results__left= results[0].cLeftCommit
+              h4.results.results__right= results[0].cRightCommit
           .panel-body
-            .row
-              .col-xs-6.thumb--wrapper
-                each val in imagesA
-                  .row
-                    h4= commitA
-                    span.thumb--title= val.filename
-                    img.thumb(src='data:image/png;base64,' + val.data)
-              .col-xs-6.thumb--wrapper
-                each val in imagesB
-                  .row
-                    h4= commitB
-                    span.thumb--title= val.filename
-                    img.thumb(src='data:image/png;base64,' + val.data)
+              each res in results
+                .row
+                  if results[0].status == true
+                    .col-xs-offset-2.col-xs-8.match__pass.bg-success
+                      h5= res.cLeft 
+                      h5 Match!
+                  else
+                    .col-xs-offset-2.col-xs-8.match__pass.bg-danger
+                      h5= res.cLeft
+                      h5 Something is different here... 
+                .row
+                  .col-xs-6.thumb--wrapper
+                    p= res.leftData.filename
+                    img.thumb(src='data:image/png;base64,' + res.leftData.data)
+                  .col-xs-6.thumb--wrapper
+                    p= res.rightData.filename
+                    img.thumb(src='data:image/png;base64,' + res.rightData.data)
 include footer.jade
-
