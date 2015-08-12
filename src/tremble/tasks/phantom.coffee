@@ -18,10 +18,9 @@ app =
 
     config.page.renderBase64 'PNG', (dataString) ->
       winston.log 'verbose', 'render of %s complete', filename
-      buffer = new Buffer dataString, 'base64'
 
       config.dataString = dataString
-      config.imageBuffer = buffer
+
       deferred.resolve config
 
     return deferred.promise
@@ -53,8 +52,9 @@ app =
     filename = 'Apps/tremble-js/screenshots/'
     filename += config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
+    buffer = new Buffer config.dataString, 'base64'
 
-    app.dropbox.writeFile filename, config.buffer, (err, stat) ->
+    app.dropbox.writeFile filename, buffer, (err, stat) ->
       deferred.reject "unable to save image to dropbox" if err
       winston.log 'verbose', 'file %s saved to dropbox', filename
       deferred.resolve config

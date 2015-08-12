@@ -23,11 +23,8 @@ app = {
     filename += config.res.width + '-' + config.res.height + '.png';
     winston.log('verbose', 'rendering %s', filename);
     config.page.renderBase64('PNG', function(dataString) {
-      var buffer;
       winston.log('verbose', 'render of %s complete', filename);
-      buffer = new Buffer(dataString, 'base64');
       config.dataString = dataString;
-      config.imageBuffer = buffer;
       return deferred.resolve(config);
     });
     return deferred.promise;
@@ -50,13 +47,14 @@ app = {
     return deferred.promise;
   },
   saveDropbox: function(config) {
-    var deferred, filename;
+    var buffer, deferred, filename;
     winston.log('info', 'phantom.saveDropbox');
     deferred = Q.defer();
     filename = 'Apps/tremble-js/screenshots/';
     filename += config.commit + '/' + config.route_name + '.';
     filename += config.res.width + '-' + config.res.height + '.png';
-    app.dropbox.writeFile(filename, config.buffer, function(err, stat) {
+    buffer = new Buffer(config.dataString, 'base64');
+    app.dropbox.writeFile(filename, buffer, function(err, stat) {
       if (err) {
         deferred.reject("unable to save image to dropbox");
       }

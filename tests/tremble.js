@@ -1,4 +1,4 @@
-var Q, assert, chai, chaiAsPromised, commit, dropbox, fs, gm, mkdirp, options, phantom, port, request, tremble, trembleWeb, url, user, uuid;
+var Q, assert, chai, chaiAsPromised, commit, compare, dropbox, fs, gm, mkdirp, options, phantom, port, request, tremble, trembleWeb, url, user, uuid;
 
 Q = require('q');
 
@@ -25,6 +25,8 @@ dropbox = require('dropbox');
 trembleWeb = require('../bin/web.js').app;
 
 tremble = require('../bin/tasks/phantom');
+
+compare = require('../bin/tasks/compare');
 
 user = {
   images: [],
@@ -187,7 +189,21 @@ describe('TrembleJS', function() {
         if (status !== 'success') {
           done(status);
         }
-        return tremble.capture(options).then(function(conf) {
+        return tremble.capture(options).then(function(config) {
+          var buffer, deferred, filename;
+          deferred = Q.defer();
+          filename = 'screenshots/' + config.commit;
+          filename += '/' + config.route_name + '.';
+          filename += config.res.width + '-' + config.res.height + '.png';
+          buffer = new Buffer(config.dataString, 'base64');
+          fs.writeFile(filename, buffer, function(err) {
+            if (err) {
+              deferred.reject("unable to save image");
+            }
+            return deferred.resolve(config);
+          });
+          return deferred.promise;
+        }).then(function(conf) {
           var deferred;
           deferred = Q.defer();
           options.imageBuffer = conf.imageBuffer;
