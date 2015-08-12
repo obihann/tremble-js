@@ -27,6 +27,7 @@ app.use session(
     console.log err or 'connect-mongodb setup ok'
     return
 )
+  ttl: 24 * 3600,
   secret: 'keyboard cat'
   resave: true
   saveUninitialized: false)

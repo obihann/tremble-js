@@ -17,7 +17,14 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(user, done) {
-  return done(null, user);
+  return models.user.findOne({
+    _id: user._id
+  }, function(err, user) {
+    if (err) {
+      done(err);
+    }
+    return done(null, user);
+  });
 });
 
 passportObject = {

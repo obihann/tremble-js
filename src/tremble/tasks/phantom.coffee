@@ -8,14 +8,8 @@ phantom = require 'phantom'
 winston.level = process.env.WINSTON_LEVEL
 
 app =
-  compare: (config) ->
-    winston.log 'info', 'app.compare'
-    deferred = Q.defer()
-
-    return deferred.promise
-
   capture: (config) ->
-    winston.log 'info', 'app.capture'
+    winston.log 'info', 'phantom.capture'
     deferred = Q.defer()
 
     filename = 'screenshots/' + config.commit + '/' + config.route_name + '.'
@@ -30,27 +24,18 @@ app =
       config.imageBuffer = buffer
       deferred.resolve config
 
-      # this should be a seperate step that saves both the
-      # current and last set of images to disk for comparison
-      fs.writeFile filename, buffer, (err) ->
-        deferred.reject "unable to save image" if err
-        winston.log 'verbose', 'file %s saved to filesystem', filename
-
-        deferred.resolve config
-
     return deferred.promise
 
   updateUser: (config) ->
-    winston.log 'info', 'app.updateUser'
+    winston.log 'info', 'phantom.updateUser'
     deferred = Q.defer()
 
-    filename = 'Apps/tremble-js/screenshots/'
-    filename += config.commit + '/' + config.route_name + '.'
+    filename = config.commit + '/' + config.route_name + '.'
     filename += config.res.width + '-' + config.res.height + '.png'
 
     obj =
-      filename: config.res.width + '-' + config.res.height + '.png'
-      dropbox: filename
+      filename: filename
+      dropbox: 'Apps/tremble-js/screenshots/' + filename
       commit: config.commit
       data: config.dataString
       createdAt: Date.now()
@@ -62,7 +47,7 @@ app =
     return deferred.promise
 
   saveDropbox: (config) ->
-    winston.log 'info', 'app.saveDropbox'
+    winston.log 'info', 'phantom.saveDropbox'
     deferred = Q.defer()
 
     filename = 'Apps/tremble-js/screenshots/'
@@ -77,7 +62,7 @@ app =
     return deferred.promise
 
   setRes: (config) ->
-    winston.log 'info', 'app.setRes'
+    winston.log 'info', 'phantom.setRes'
     deferred = Q.defer()
     winston.log 'verbose', 'setting viewport to %sx%s',
     config.res.width, config.res.height
@@ -98,7 +83,7 @@ app =
     return deferred.promise
 
   open: (config) ->
-    winston.log 'info', 'app.open'
+    winston.log 'info', 'phantom.open'
     deferred = Q.defer()
     winston.log 'verbose', 'opening %s', config.route_name
 
@@ -118,7 +103,7 @@ app =
     return deferred.promise
 
   process: (config) ->
-    winston.log 'info', 'app.process'
+    winston.log 'info', 'phantom.process'
     deferred = Q.defer()
 
     mkdirp 'screenshots/' + config.commit, (err) ->
