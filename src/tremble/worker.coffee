@@ -9,6 +9,7 @@ uuid = require 'uuid'
 config = require './tremble'
 dropbox = require 'dropbox'
 mongoose = require('mongoose')
+spawn = require('child_process').spawn
 
 console.log config
 
@@ -16,6 +17,7 @@ console.log config
 models = require("./utils/schema").models
 app = require("./tasks/phantom")
 compare = require("./tasks/compare")
+gitRunner = require("./tasks/git")
 
 # configure app
 winston.level = process.env.WINSTON_LEVEL
@@ -49,16 +51,22 @@ doWork = (msg) ->
 
   body = JSON.parse msg.content.toString()
 
+  commit = ''
+  logEntry = new models.log()
+
   loadUserData app, body.sender.login
     .then (app) ->
       commit =  body.head_commit.id
 
-      logEntry = new models.log
-        commit: commit
-        repo: body.repository.full_name
-        request: msg.content
+      
+      logEntry.commit = commit
+      logEntry.repo = body.repository.full_name
+      logEntry.request = msg.content
 
       app.user.repo = body.repository.full_name
+
+      username = ''
+      type = ''
 
       if typeof body.organization != 'undefined'
         username = body.organization.login
@@ -67,6 +75,18 @@ doWork = (msg) ->
         username = body.repository.owner.login
         type = 'user'
 
+      gitConfig =
+        owner: username
+        ghkey: app.user.accessToken
+        repo: body.repository.full_name
+        type: type
+        commit: commit
+
+      gitRunner.gitClone gitConfig
+      .then gitRunner.gitReset
+      .then gitRunner.gitPull
+    .then (gitConfig) ->
+      console.log config
       phantom.create (ph) ->
         winston.log 'info', 'Starting phantom'
 
@@ -96,24 +116,34 @@ doWork = (msg) ->
         )).then (res) ->
           deferred = Q.defer()
 
+          winston.log 'verbose', 'updating log with user'
+
           logEntry.user = app.user
+
+          winston.log 'verbose', 'cleaning up images'
+
           app.user.images.sort (a, b) ->
             1 if a.createdAt < b.createdAt
             -1 if b.createdAt < a.createdAt
             0
 
+          winston.log 'verbose', 'building keys'
+
           keys = []
           _.each app.user.images, (img) ->
             keys.push img.commit if keys.indexOf(img.commit) <= -1
 
+          console.log 'verbose', 'slicing images'
           keys = keys.slice 1, 3 if keys.length >= 3
 
           app.user.images = _.filter app.user.images, (img) ->
             keys.indexOf(img.commit) > -1
 
+          winston.log 'verbose', 'saving images in mongo'
+
           app.user.save (err) ->
             deferred.reject err if err
-            winston.log 'info', 'saved image in mongo'
+            winston.log 'verbose', 'saved image in mongo'
             deferred.resolve app.user
 
           deferred.promise
@@ -141,9 +171,52 @@ doWork = (msg) ->
         .catch (err) ->
           logEntry.status = "error"
           logEntry.message = err
+        .done ->
+          winston.log 'info', 'cleanup'
 
-          logEntry.save (err) ->
-            deferred.reject err if err
+          winston.log 'verbose', 'deleting screenshots'
+
+          nChild = spawn 'rm', [
+            '-rf',
+            'screenshots'
+          ]
+
+          err = null
+
+          nChild.stderr.on 'data', (data) ->
+            err = new Error '' + data
+            winston.error err
+
+            if logEntry.status != "error"
+              logEntry.status = "error"
+              logEntry.message = err
+
+          nChild.on 'close', (code) ->
+            winston.log 'verbose', 'deleting screenshots code: %s', code
+
+          winston.log 'verbose', 'deleting git code'
+
+          child = spawn 'rm', [
+            '-rf',
+            'public/tremble'
+          ]
+
+          err = null
+
+          child.stderr.on 'data', (data) ->
+            err = new Error '' + data
+            winston.error err
+
+            if logEntry.status != "error"
+              logEntry.status = "error"
+              logEntry.message = err
+
+          child.on 'close', (code) ->
+            winston.log 'verbose', 'deleting git code code: %s', code
+
+            logEntry.save (err) ->
+              winston.error err
+
 
 # setup rabbit channel
 setupWorker = (app) ->

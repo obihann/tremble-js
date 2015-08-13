@@ -1,4 +1,4 @@
-var Q, _, amqp, app, compare, config, doWork, dropbox, loadRabbit, loadUserData, mkdirp, models, mongoose, phantom, port, q, rabbitMQ, setupError, setupWorker, uuid, winston;
+var Q, _, amqp, app, compare, config, doWork, dropbox, gitRunner, loadRabbit, loadUserData, mkdirp, models, mongoose, phantom, port, q, rabbitMQ, setupError, setupWorker, spawn, uuid, winston;
 
 winston = require('winston');
 
@@ -20,6 +20,8 @@ dropbox = require('dropbox');
 
 mongoose = require('mongoose');
 
+spawn = require('child_process').spawn;
+
 console.log(config);
 
 models = require("./utils/schema").models;
@@ -27,6 +29,8 @@ models = require("./utils/schema").models;
 app = require("./tasks/phantom");
 
 compare = require("./tasks/compare");
+
+gitRunner = require("./tasks/git");
 
 winston.level = process.env.WINSTON_LEVEL;
 
@@ -46,7 +50,7 @@ setupError = function(err) {
 };
 
 doWork = function(msg) {
-  var body, e, mkSSDir, ssDir;
+  var body, commit, e, logEntry, mkSSDir, ssDir;
   winston.log('info', 'doWork');
   mkSSDir = function() {
     return mkdirp('screenshots', function(err) {
@@ -65,15 +69,17 @@ doWork = function(msg) {
     mkSSDir();
   }
   body = JSON.parse(msg.content.toString());
+  commit = '';
+  logEntry = new models.log();
   return loadUserData(app, body.sender.login).then(function(app) {
-    var commit, logEntry, type, username;
+    var gitConfig, type, username;
     commit = body.head_commit.id;
-    logEntry = new models.log({
-      commit: commit,
-      repo: body.repository.full_name,
-      request: msg.content
-    });
+    logEntry.commit = commit;
+    logEntry.repo = body.repository.full_name;
+    logEntry.request = msg.content;
     app.user.repo = body.repository.full_name;
+    username = '';
+    type = '';
     if (typeof body.organization !== 'undefined') {
       username = body.organization.login;
       type = 'org';
@@ -81,6 +87,16 @@ doWork = function(msg) {
       username = body.repository.owner.login;
       type = 'user';
     }
+    gitConfig = {
+      owner: username,
+      ghkey: app.user.accessToken,
+      repo: body.repository.full_name,
+      type: type,
+      commit: commit
+    };
+    return gitRunner.gitClone(gitConfig).then(gitRunner.gitReset).then(gitRunner.gitPull);
+  }).then(function(gitConfig) {
+    console.log(config);
     return phantom.create(function(ph) {
       winston.log('info', 'Starting phantom');
       return Q.all(_.map(config.pages, function(page) {
@@ -104,7 +120,9 @@ doWork = function(msg) {
       })).then(function(res) {
         var deferred, keys;
         deferred = Q.defer();
+        winston.log('verbose', 'updating log with user');
         logEntry.user = app.user;
+        winston.log('verbose', 'cleaning up images');
         app.user.images.sort(function(a, b) {
           if (a.createdAt < b.createdAt) {
             1;
@@ -114,23 +132,26 @@ doWork = function(msg) {
           }
           return 0;
         });
+        winston.log('verbose', 'building keys');
         keys = [];
         _.each(app.user.images, function(img) {
           if (keys.indexOf(img.commit) <= -1) {
             return keys.push(img.commit);
           }
         });
+        console.log('verbose', 'slicing images');
         if (keys.length >= 3) {
           keys = keys.slice(1, 3);
         }
         app.user.images = _.filter(app.user.images, function(img) {
           return keys.indexOf(img.commit) > -1;
         });
+        winston.log('verbose', 'saving images in mongo');
         app.user.save(function(err) {
           if (err) {
             deferred.reject(err);
           }
-          winston.log('info', 'saved image in mongo');
+          winston.log('verbose', 'saved image in mongo');
           return deferred.resolve(app.user);
         });
         return deferred.promise;
@@ -157,11 +178,40 @@ doWork = function(msg) {
         return deferred.promise;
       })["catch"](function(err) {
         logEntry.status = "error";
-        logEntry.message = err;
-        return logEntry.save(function(err) {
-          if (err) {
-            return deferred.reject(err);
+        return logEntry.message = err;
+      }).done(function() {
+        var child, err, nChild;
+        winston.log('info', 'cleanup');
+        winston.log('verbose', 'deleting screenshots');
+        nChild = spawn('rm', ['-rf', 'screenshots']);
+        err = null;
+        nChild.stderr.on('data', function(data) {
+          err = new Error('' + data);
+          winston.error(err);
+          if (logEntry.status !== "error") {
+            logEntry.status = "error";
+            return logEntry.message = err;
           }
+        });
+        nChild.on('close', function(code) {
+          return winston.log('verbose', 'deleting screenshots code: %s', code);
+        });
+        winston.log('verbose', 'deleting git code');
+        child = spawn('rm', ['-rf', 'public/tremble']);
+        err = null;
+        child.stderr.on('data', function(data) {
+          err = new Error('' + data);
+          winston.error(err);
+          if (logEntry.status !== "error") {
+            logEntry.status = "error";
+            return logEntry.message = err;
+          }
+        });
+        return child.on('close', function(code) {
+          winston.log('verbose', 'deleting git code code: %s', code);
+          return logEntry.save(function(err) {
+            return winston.error(err);
+          });
         });
       });
     });
